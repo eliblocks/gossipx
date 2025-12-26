@@ -1,0 +1,6 @@
+make more like postmatch
+  - generic "engage user in conversation" (tell me whats going on)
+  - eager to create a post
+  - limit user to a number of posts daily
+  - No validation, except possibly similarity
+  - control prompt behivor from contorller, assign post grouping from controller
