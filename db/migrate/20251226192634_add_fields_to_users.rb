@@ -5,5 +5,7 @@ class AddFieldsToUsers < ActiveRecord::Migration[8.1]
     add_column :users, :last_name, :string
     add_column :users, :instagram_id, :string
     add_column :users, :instagram_username, :string
+    add_column :users, :summary, :text
+    add_column :users, :embedding, :vector
   end
 end

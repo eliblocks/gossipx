@@ -1,3 +1,37 @@
-<%= button_to "Log Out", destroy_user_session_path, method: :delete, class: "btn btn-secondary mt-5" %>
-<br><br>
-<h2>Users</h2>
+<h1>Users</h1>
+
+<div class="d-flex">
+  <div>
+    <%= link_to "New User", new_user_path, class: "btn btn-primary me-2" %>
+  </div>
+  <div>
+    <%= button_to "Generate User", generate_users_path, class: "btn btn-primary" %>
+  </div>
+</div>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Username</th>
+      <th>Name</th>
+      <th>Role</th>
+      <th>Messages</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @users.each do |user| %>
+      <tr>
+        <td><%= user.instagram_username %></td>
+        <td><%= user.full_name %></td>
+        <td><%= user.role %></td>
+        <td><%= user.messages.count %></td>
+        <td>
+          <%= link_to "Show", user_path(user) %> |
+          <%= link_to "Edit", edit_user_path(user) %> |
+          <%= link_to "Reset", user_reset_path(user), data: { turbo_method: :patch } %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
