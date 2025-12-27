@@ -13,11 +13,16 @@ class User < ApplicationRecord
   end
 
   def handle_message(content)
-    messages.create(role: "user", content:)
+    messages.create!(role: "user", content:)
+
+    Rails.env.development? ? ReplyJob.perform_now(id) : ReplyJob.perform_later(id)
+  end
+
+  def reply
     summarize
     embed
     response = chat(conversation, instructions: chat_prompt)
-    message = messages.create(role: "assistant", content: response.output_text)
+    message = messages.create!(role: "assistant", content: response.output_text)
     send_message(message)
   end
 
@@ -39,7 +44,7 @@ class User < ApplicationRecord
   end
 
   def summarize
-    content = [{ role: "user", content: "Summarize this conversation" }]
+    content = [{ role: "user", content: "Summarize this conversation:\n#{formatted_messages}"}]
     response = chat(content)
 
     update!(summary: response.output_text)
