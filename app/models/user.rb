@@ -12,10 +12,10 @@ class User < ApplicationRecord
     "#{first_name} #{last_name}"
   end
 
-  def handle_message(content)
+  def handle_message(content, now=false)
     messages.create!(role: "user", content:)
 
-    Rails.env.development? ? ReplyJob.perform_now(id) : ReplyJob.perform_later(id)
+    now ? ReplyJob.perform_now(id) : ReplyJob.perform_later(id)
   end
 
   def reply
