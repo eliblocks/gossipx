@@ -23,4 +23,8 @@ Rails.application.routes.draw do
 
   get "/webhooks/instagram", to: "webhooks#verify_instagram"
   post "/webhooks/instagram", to: "webhooks#instagram"
+
+  authenticate :user, ->(user) { user.role == "admin" } do
+    mount GoodJob::Engine => 'good_job'
+  end
 end
