@@ -41,6 +41,7 @@ gem "devise"
 gem "neighbor"
 gem "openai", "~> 0.36.1"
 gem "faker"
+gem "http"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
