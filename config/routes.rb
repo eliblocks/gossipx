@@ -21,10 +21,6 @@ Rails.application.routes.draw do
     end
   end
 
-  namespace :api do
-    resources :messages, only: [ :create ]
-
-    get "/webhooks/instagram", to: "webhooks#verify_instagram"
-    post "/webhooks/instagram", to: "webhooks#instagram"
-  end
+  get "/webhooks/instagram", to: "webhooks#verify_instagram"
+  post "/webhooks/instagram", to: "webhooks#instagram"
 end

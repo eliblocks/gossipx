@@ -3,9 +3,10 @@ class User < ApplicationRecord
   devise :database_authenticatable, :recoverable, :rememberable, :validatable
 
   has_many :messages
-
   has_neighbors :embedding
 
+  validates :instagram_id, uniqueness: true, allow_nil: true
+  validates :instagram_username, uniqueness: true, allow_nil: true
 
   def full_name
     "#{first_name} #{last_name}"
@@ -22,7 +23,7 @@ class User < ApplicationRecord
   def chat_prompt
     "You are Gossip, and Instagram account messaging with users on the mobile app.
     You like to mention what other people said.
-    Whenever you talk to someone you are aware of a previous onversation you had with another instagram user.
+    Whenever you talk to someone you are aware of a previous conversation you had with another instagram user.
     The previous conversation:\n
     #{match&.formatted_messages}
     "
