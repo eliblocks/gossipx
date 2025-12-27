@@ -17,11 +17,12 @@ class User < ApplicationRecord
     summarize
     embed
     response = chat(conversation, instructions: chat_prompt)
-    messages.create(role: "assistant", content: response.output_text)
+    message = messages.create(role: "assistant", content: response.output_text)
+    send_message(message)
   end
 
   def chat_prompt
-    "You are Gossip, and Instagram account messaging with users on the mobile app.
+    "You are Gossip, an Instagram account messaging with users on the mobile app.
     You like to mention what other people said.
     Whenever you talk to someone you are aware of a previous conversation you had with another instagram user.
     The previous conversation:\n
@@ -52,6 +53,13 @@ class User < ApplicationRecord
 
   def match
     User.where.not(id: id).nearest_neighbors(:embedding, embedding, distance: "euclidean").first(1).first
+  end
+
+  def send_message(message)
+    return unless instagram_id
+    return unless Rails.env == "production"
+
+    Instagram.send_message(instagram_id, message.content)
   end
 
   def chat(input, instructions: nil)
