@@ -77,6 +77,8 @@ GEM
       uri (>= 0.13.1)
     addressable (2.8.8)
       public_suffix (>= 2.0.2, < 8.0)
+    anthropic (1.16.2)
+      connection_pool
     ast (2.4.3)
     base64 (0.3.0)
     bcrypt (3.1.20)
@@ -340,6 +342,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  anthropic (~> 1.1)
   bootsnap
   brakeman
   bundler-audit
@@ -380,6 +383,7 @@ CHECKSUMS
   activestorage (8.1.1) sha256=bc01d8b4c55e309a0a2e218bfe502c382c9f232e28b1f4b0adc9d8719d2bf28d
   activesupport (8.1.1) sha256=5e92534e8d0c8b8b5e6b16789c69dbea65c1d7b752269f71a39422e9546cea67
   addressable (2.8.8) sha256=7c13b8f9536cf6364c03b9d417c19986019e28f7c00ac8132da4eb0fe393b057
+  anthropic (1.16.2) sha256=2509e00a2c2d3cfb311adff681efa139d5c5107472cdaca0991160d6e3c48e15
   ast (2.4.3) sha256=954615157c1d6a382bc27d690d973195e79db7f55e9765ac7c481c60bdb4d383
   base64 (0.3.0) sha256=27337aeabad6ffae05c265c450490628ef3ebd4b67be58257393227588f5a97b
   bcrypt (3.1.20) sha256=8410f8c7b3ed54a3c00cd2456bf13917d695117f033218e2483b2e40b0784099

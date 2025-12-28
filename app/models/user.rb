@@ -21,8 +21,8 @@ class User < ApplicationRecord
   def reply
     summarize
     embed
-    response = chat(conversation, instructions: chat_prompt)
-    message = messages.create!(role: "assistant", content: response.output_text)
+    response = Ai.chat(conversation, instructions: chat_prompt)
+    message = messages.create!(role: "assistant", content: response)
     send_message(message)
   end
 
@@ -63,7 +63,7 @@ class User < ApplicationRecord
 
     if messages.where(role: "user").count > 1
       contents = [{ role: "user", content: summary_prompt }]
-      new_summary = chat(contents).output_text
+      new_summary = Ai.chat(contents)
     else
       new_summary = messages.where(role: "user").first.content
     end
@@ -109,7 +109,7 @@ class User < ApplicationRecord
 
   def match
     contents = [{ role: "user", content: best_match_prompt }]
-    user_id = chat(contents).output_text
+    user_id = Ai.chat(contents)
     User.find(user_id)
   end
 
@@ -118,19 +118,5 @@ class User < ApplicationRecord
     return unless Rails.env == "production"
 
     Instagram.send_message(instagram_id, message.content)
-  end
-
-  def chat(input, instructions: nil)
-    parameters = {
-      model: "gpt-5.2",
-      store: true,
-      metadata: { environment: Rails.env, app: "Blabber" },
-      reasoning: { effort: :medium },
-      input:
-    }
-
-    parameters[:instructions] = instructions if instructions
-  
-    OpenAI::Client.new.responses.create(parameters)
   end
 end
