@@ -35,6 +35,21 @@ class User < ApplicationRecord
     "
   end
 
+  def summary_prompt
+    <<~HEREDOC
+     "Summarize the following conversation by rewriting it as though it were written all at once by the user.
+     The summary should not include any information about other people mentioned by the bot,
+     but it should take into account the entire conversation to most accurately frame it as a message or post from the user
+
+     Conversation:
+
+     \n#{formatted_messages}"
+
+
+     Return the summary directly
+    HEREDOC
+  end
+
   def formatted_messages
     messages.order(:created_at).format
   end
@@ -44,10 +59,16 @@ class User < ApplicationRecord
   end
 
   def summarize
-    content = [{ role: "user", content: "Summarize this conversation:\n#{formatted_messages}"}]
-    response = chat(content)
+    new_summary = ""
 
-    update!(summary: response.output_text)
+    if messages.where(role: "user").count > 1
+      contents = [{ role: "user", content: summary_prompt }]
+      new_summary = chat(contents).output_text
+    else
+      new_summary = messages.where(role: "user").first.content
+    end
+
+    update!(summary: new_summary)
   end
 
   def embed
@@ -56,8 +77,40 @@ class User < ApplicationRecord
     update!(embedding: response.data.first.embedding)
   end
 
+  def similar
+    User.where.not(id: id).nearest_neighbors(:embedding, embedding, distance: "euclidean").first(20)
+  end
+
+  def formatted
+    "#{id} - #{summary}"
+  end
+
+  def formatted_similar
+    similar.map(&:formatted).split("\n")
+  end
+
+  def best_match_prompt
+    <<~HEREDOC
+      For the current user summary, find the single best matching user summary.
+      The best matching summary is the one we would most want to refer to when speaking with the current user.
+      The best matching summary could be interesting or funny or relevant or useful in some way.
+
+      This user summary:
+      #{summary}
+
+      =====================
+
+      Other user summaries:
+      #{formatted_similar}
+
+      Return only the id of the best user summary.
+    HEREDOC
+  end
+
   def match
-    User.where.not(id: id).nearest_neighbors(:embedding, embedding, distance: "euclidean").first(1).first
+    contents = [{ role: "user", content: best_match_prompt }]
+    user_id = chat(contents).output_text
+    User.find(user_id)
   end
 
   def send_message(message)
