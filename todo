@@ -1,6 +1,51 @@
-make more like postmatch
-  - generic "engage user in conversation" (tell me whats going on)
-  - eager to create a post
-  - limit user to a number of posts daily
-  - No validation, except possibly similarity
-  - control prompt behivor from contorller, assign post grouping from controller
+hard code introduction message to guide chatbot through the rest of conversation
+
+always share, but match in proportion to effort and type. requires posts? but no validation.
+
+query and seeking are not the same! "I am a software eningeer looking for a job" vs "who is hiring software engineers". Who are you and why should you have information on what other people are doing. match searchers with searchers or prompt for info. possibly match seekers with seekers, and info sharers with info sharers. is it info that you are seeking? maybe 
+
+Remove roleplay? You are gossip... that instructs bot to hallucinate?
+
+Try moving context into user message. both user and match conversaiton can be in the user message with structured output. only roleplay in system message or the whole thing in user message. Tricky with tool calling
+
+gossip doesnt need to be secrets, different system prompt on same app with same behaviour. no validation but matching with types
+
+update posts?
+
+ensure no duplicate matches
+
+
+Can launch gossip and blabber both names Gossip with two different usernames
+
+can put generic gossip on @connectionsbot. can switch between blabber and generic gossip, same experience for end user, unknown which will have better quality responses. The idea is a generic whats going on, tell me something prompt. followed directly by referecing a matching contribtution. Either by creating a post or by finding best user summary.
+
+
+User summary matching vs post matching:
+- user summary means we can find highly relevant people to talk from the details that have been shared over the course of the conversation
+- user summary is simpler creating and updating posts
+- post matching removes logic burden from the chatbot which is the most difficult part
+- post matching can allow finetuned give to get, making sure people cant just search
+
+
+benefits of gossip
+- guides user to something specific, actionable, and matchable with few network users
+
+benefits of blabber
+- least friction, fastest possbile demo
+
+postfinder pros
+- no conversation to get lost in
+- no chatbot
+- intuitive, user knows they are submitting a post
+
+postfinder cons
+- no deniability, feels like making a public post
+- custom ui/ux
+- less novel than instagram chatbot
+- requires signup
+
+can launch generic version of gossip on same app with
+- elaborate matching
+- update tool. update rematches with new post
+- group string secret | generic
+

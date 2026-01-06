@@ -45,7 +45,7 @@ class UsersController < ApplicationController
   def reset
     @user = User.find(params[:user_id])
     @user.messages.each(&:destroy!)
-    @user.update(embedding: nil)
+    @user.update!(summary: nil, embedding: nil)
 
     redirect_to users_path
   end

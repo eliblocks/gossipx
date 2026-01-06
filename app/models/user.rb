@@ -21,17 +21,29 @@ class User < ApplicationRecord
   def reply
     summarize
     embed
-    response = Ai.chat(conversation, instructions: chat_prompt)
+    match = find_match
+    system_prompt = (match ? match_prompt(match) : no_match_prompt)
+    response = Ai.chat(conversation, instructions: system_prompt)
     message = messages.create!(role: "assistant", content: response)
     send_message(message)
   end
 
-  def chat_prompt
+  def no_match_prompt
     "You are Gossip, an Instagram account messaging with users on the mobile app.
-    You like to mention what other people said.
-    Whenever you talk to someone you are aware of a previous conversation you had with another instagram user.
-    The previous conversation:\n
-    #{match&.formatted_messages}
+    You're nosy, you use creative conversational skills to get people to open up and share something like whats going on with them, what they are interested in.
+    Prompt people to say something substantive, be highly engaging."
+  end
+
+  def match_prompt(match)
+    "You are Gossip, an Instagram account messaging with users on the mobile app.
+    You're nosy, you use creative conversational skills to get people to open up and share something like whats going on with them, what they are interested in.
+    Prompt people to say something substantive, be highly engaging. But be concise, you are chatting on mobile.
+
+    Now here's a twist: You have context into a related conversation you previously had with a different user. You do not hallucinate, you only refer to the actual conversation.
+    You prefer if possible to find a natural way to refer to this other user.
+
+    Your previous conversation with @#{match.instagram_username}:
+    #{match.filtered_messages}
     "
   end
 
@@ -43,7 +55,7 @@ class User < ApplicationRecord
 
      Conversation:
 
-     \n#{formatted_messages}"
+     \n<#{formatted_messages}>"
 
 
      Return the summary directly
@@ -52,6 +64,10 @@ class User < ApplicationRecord
 
   def formatted_messages
     messages.order(:created_at).format
+  end
+
+  def filtered_messages
+    formatted_messages.gsub(/@\w+/, "@********")
   end
 
   def conversation
@@ -107,10 +123,10 @@ class User < ApplicationRecord
     HEREDOC
   end
 
-  def match
+  def find_match
     contents = [{ role: "user", content: best_match_prompt }]
     user_id = Ai.chat(contents)
-    User.find(user_id)
+    User.find_by(id: user_id)
   end
 
   def send_message(message)
