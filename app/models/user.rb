@@ -19,32 +19,27 @@ class User < ApplicationRecord
   end
 
   def reply
-    summarize
-    embed
-    match = find_match
-    system_prompt = (match ? match_prompt(match) : no_match_prompt)
-    response = Ai.chat(conversation, instructions: system_prompt)
-    message = messages.create!(role: "assistant", content: response)
+    previous_messages = messages.order(:created_at).to_a
+    message = claude.chat(previous_messages, system_prompt: system_prompt, tools: [reflect_tool], type: "conversation")
     send_message(message)
   end
 
-  def no_match_prompt
-    "You are Gossip, an Instagram account messaging with users on the mobile app.
-    You're nosy, you use creative conversational skills to get people to open up and share something like whats going on with them, what they are interested in.
-    Prompt people to say something substantive, be highly engaging."
+  def reflect_tool
+    {
+      name: "reflect",
+      description: "Search for related content",
+      input_schema: {
+        type: "object",
+        properties: {},
+      }
+    }
   end
 
-  def match_prompt(match)
+  def system_prompt
     "You are Gossip, an Instagram account messaging with users on the mobile app.
     You're nosy, you use creative conversational skills to get people to open up and share something like whats going on with them, what they are interested in.
-    Prompt people to say something substantive, be highly engaging. But be concise, you are chatting on mobile.
-
-    Now here's a twist: You have context into a related conversation you previously had with a different user. You do not hallucinate, you only refer to the actual conversation.
-    You prefer if possible to find a natural way to refer to this other user.
-
-    Your previous conversation with @#{match.instagram_username}:
-    #{match.filtered_messages}
-    "
+    Prompt people to say something substantive, be highly engaging. But be concise, you are chatting on mobile. When a user has added information to the conversation, call reflect.
+    The function will respond with information from a related conversation that you can share to keep up your end."
   end
 
   def summary_prompt
@@ -60,6 +55,12 @@ class User < ApplicationRecord
 
      Return the summary directly
     HEREDOC
+  end
+
+  def reflect
+    embed
+    best_match = find_match
+    extract_content(best_match)
   end
 
   def formatted_messages
@@ -88,7 +89,7 @@ class User < ApplicationRecord
   end
 
   def embed
-    response = OpenAI::Client.new.embeddings.create(model: "text-embedding-3-large", input: summary)
+    response = OpenAI::Client.new.embeddings.create(model: "text-embedding-3-large", input: formatted_messages)
 
     update!(embedding: response.data.first.embedding)
   end
@@ -97,36 +98,50 @@ class User < ApplicationRecord
     User.where.not(id: id).nearest_neighbors(:embedding, embedding, distance: "euclidean").first(20)
   end
 
-  def formatted
-    "#{id} - #{summary}"
+  def formatted_similar
+    similar.map(&:formatted_messages).split("\n")
   end
 
-  def formatted_similar
-    similar.map(&:formatted).split("\n")
+  def extraction_prompt(matching_user)
+     <<~HEREDOC
+      For the current user conversation, consider the matching conversation and extract something relevant in the form of @so-and-so said ...
+
+      This conversation:
+      #{formatted_messages}
+
+      =====================
+      #{matching_user.formatted_messages}
+    HEREDOC
   end
+
+  def extract_content(matching_user)
+    contents = [{ role: "user", content: extraction_prompt(matching_user) }]
+    Ai.chat(contents)
+  end
+
 
   def best_match_prompt
     <<~HEREDOC
-      For the current user summary, find the single best matching user summary.
-      The best matching summary is the one we would most want to refer to when speaking with the current user.
-      The best matching summary could be interesting or funny or relevant or useful in some way.
+      For the current user conversation, find the single best matching user conversation.
+      The best matching conversation is the one we would most want to refer to when speaking with the current user.
+      The best matching conversation could be interesting or funny or relevant or useful in some way.
 
-      This user summary:
-      #{summary}
+      This user conversation:
+      #{formatted_messages}
 
       =====================
 
-      Other user summaries:
+      Other user conversations:
       #{formatted_similar}
 
-      Return only the id of the best user summary.
+      Return only the username of the best conversation.
     HEREDOC
   end
 
   def find_match
     contents = [{ role: "user", content: best_match_prompt }]
-    user_id = Ai.chat(contents)
-    User.find_by(id: user_id)
+    match_username = Ai.chat(contents).gsub("@", "")
+    User.find_by(instagram_username: match_username)
   end
 
   def send_message(message)
@@ -134,5 +149,9 @@ class User < ApplicationRecord
     return unless Rails.env == "production"
 
     Instagram.send_message(instagram_id, message.content)
+  end
+
+  def claude
+    Claude.new(self)
   end
 end
