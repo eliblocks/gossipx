@@ -8,6 +8,48 @@ class User < ApplicationRecord
   validates :instagram_id, uniqueness: true, allow_nil: true
   validates :instagram_username, uniqueness: true, allow_nil: true
 
+  DEFAULT_SYSTEM_PROMPT = 
+    "You are Gossip, an Instagram account messaging with users on the mobile app.
+    You're nosy, you use creative conversational skills to get people to open up and share something like whats going on with them, what they are interested in.
+    Prompt people to say something substantive, be highly engaging. But be concise, you are chatting on mobile. When a user has added information to the conversation, call reflect.
+    The function will respond with information from a related conversation that you can share to keep up your end."
+
+  EXTRACTION_DEFAULT_PROMPT =
+    <<~HEREDOC
+      What's the one thing from the matched conversation that matters most to the current user?
+      State it as a fact about the matched user. Include their @username.
+      Example: @alice is starting salsa lessons in brooklyn next week.
+
+      ---
+
+      Current user conversation:
+      {{current_user_conversation}}
+
+      ---
+
+      Matched conversation:
+      {{matching_conversation}}
+    HEREDOC
+
+  MATCHING_DEFAULT_PROMPT =
+    <<~HEREDOC
+      For the current user conversation, find the single best matching user conversation.
+      The best matching conversation is the one we would most want to refer to when speaking with the current user.
+      The best matching conversation could be interesting or funny or relevant or useful in some way.
+
+      ---
+
+      Current user conversation:
+      {{current_user_conversation}}
+
+      ---
+
+      Other user conversations:
+      {{similar_conversations}}
+
+      Return only the username of the best conversation.
+    HEREDOC
+
   def full_name
     "#{first_name} #{last_name}"
   end
@@ -20,7 +62,7 @@ class User < ApplicationRecord
 
   def reply
     previous_messages = messages.order(:created_at).to_a
-    message = claude.chat(previous_messages, system_prompt: system_prompt, tools: [reflect_tool], type: "conversation")
+    message = claude.chat(previous_messages, system_prompt: DEFAULT_SYSTEM_PROMPT, tools: [reflect_tool], type: "conversation")
     send_message(message)
   end
 
@@ -35,17 +77,10 @@ class User < ApplicationRecord
     }
   end
 
-  def system_prompt
-    "You are Gossip, an Instagram account messaging with users on the mobile app.
-    You're nosy, you use creative conversational skills to get people to open up and share something like whats going on with them, what they are interested in.
-    Prompt people to say something substantive, be highly engaging. But be concise, you are chatting on mobile. When a user has added information to the conversation, call reflect.
-    The function will respond with information from a related conversation that you can share to keep up your end."
-  end
-
   def reflect
     embed
-    best_match = find_match
-    extract_content(best_match)
+    best_match = find_match(MATCHING_DEFAULT_PROMPT)
+    extract_content(EXTRACTION_DEFAULT_PROMPT, best_match)
   end
 
   def formatted_messages
@@ -71,52 +106,24 @@ class User < ApplicationRecord
   end
 
   def formatted_similar
-    similar.map(&:formatted_messages).split("\n")
+    similar.map(&:formatted_messages).join("\n")
   end
 
-  def extraction_prompt(matching_user)
-     <<~HEREDOC
-      What's the one thing from the matched conversation that matters most to the current user?
-      State it as a fact about the matched user. Include their @username.
-      Example: @alice is starting salsa lessons in brooklyn next week.
-
-      ---
-
-      Current user conversation:
-      #{formatted_messages}
-
-      ---
-
-      Matched conversation:
-      #{matching_user.formatted_messages}
-    HEREDOC
+  def extraction_prompt(prompt, matching_user)
+    prompt.sub("{{current_user_conversation}}", formatted_messages).sub("{{matching_conversation}}", matching_user.formatted_messages)
   end
 
-  def extract_content(matching_user)
-    contents = [{ role: "user", content: extraction_prompt(matching_user) }]
+  def extract_content(prompt, matching_user)
+    contents = [{ role: "user", content: extraction_prompt(prompt, matching_user) }]
     Ai.chat(contents)
   end
 
-  def best_match_prompt
-    <<~HEREDOC
-      For the current user conversation, find the single best matching user conversation.
-      The best matching conversation is the one we would most want to refer to when speaking with the current user.
-      The best matching conversation could be interesting or funny or relevant or useful in some way.
-
-      This user conversation:
-      #{formatted_messages}
-
-      =====================
-
-      Other user conversations:
-      #{formatted_similar}
-
-      Return only the username of the best conversation.
-    HEREDOC
+  def best_match_prompt(prompt)
+    prompt.sub("{{current_user_conversation}}", formatted_messages).sub("{{similar_conversations}}", formatted_similar)
   end
 
-  def find_match
-    contents = [{ role: "user", content: best_match_prompt }]
+  def find_match(prompt)
+    contents = [{ role: "user", content: best_match_prompt(prompt) }]
     match_username = Ai.chat(contents).gsub("@", "")
     User.find_by(instagram_username: match_username)
   end
