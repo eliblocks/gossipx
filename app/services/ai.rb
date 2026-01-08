@@ -27,7 +27,6 @@ class Ai
     end
 
     def anthropic_chat(messages, instructions: nil)
-      puts "\n\nInstructions: #{instructions}\n\n"
       params = { 
         model: "claude-opus-4-5",
         max_tokens: 8000,
