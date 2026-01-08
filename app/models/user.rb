@@ -42,21 +42,6 @@ class User < ApplicationRecord
     The function will respond with information from a related conversation that you can share to keep up your end."
   end
 
-  def summary_prompt
-    <<~HEREDOC
-     "Summarize the following conversation by rewriting it as though it were written all at once by the user.
-     The summary should not include any information about other people mentioned by the bot,
-     but it should take into account the entire conversation to most accurately frame it as a message or post from the user
-
-     Conversation:
-
-     \n<#{formatted_messages}>"
-
-
-     Return the summary directly
-    HEREDOC
-  end
-
   def reflect
     embed
     best_match = find_match
@@ -75,19 +60,6 @@ class User < ApplicationRecord
     messages.map { |message| {role: message.role, content: message.content} }
   end
 
-  def summarize
-    new_summary = ""
-
-    if messages.where(role: "user").count > 1
-      contents = [{ role: "user", content: summary_prompt }]
-      new_summary = Ai.chat(contents)
-    else
-      new_summary = messages.where(role: "user").first.content
-    end
-
-    update!(summary: new_summary)
-  end
-
   def embed
     response = OpenAI::Client.new.embeddings.create(model: "text-embedding-3-large", input: formatted_messages)
 
@@ -104,12 +76,18 @@ class User < ApplicationRecord
 
   def extraction_prompt(matching_user)
      <<~HEREDOC
-      For the current user conversation, consider the matching conversation and extract something relevant in the form of @so-and-so said ...
+      What's the one thing from the matched conversation that matters most to the current user?
+      State it as a fact about the matched user. Include their @username.
+      Example: @alice is starting salsa lessons in brooklyn next week.
 
-      This conversation:
+      ---
+
+      Current user conversation:
       #{formatted_messages}
 
-      =====================
+      ---
+
+      Matched conversation:
       #{matching_user.formatted_messages}
     HEREDOC
   end
@@ -118,7 +96,6 @@ class User < ApplicationRecord
     contents = [{ role: "user", content: extraction_prompt(matching_user) }]
     Ai.chat(contents)
   end
-
 
   def best_match_prompt
     <<~HEREDOC

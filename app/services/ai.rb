@@ -29,7 +29,7 @@ class Ai
     def anthropic_chat(messages, instructions: nil)
       puts "\n\nInstructions: #{instructions}\n\n"
       params = { 
-        model: "claude-haiku-4-5",
+        model: "claude-opus-4-5",
         max_tokens: 8000,
         # thinking: {
         #   type: :enabled,
