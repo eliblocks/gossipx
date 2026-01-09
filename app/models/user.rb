@@ -12,7 +12,7 @@ class User < ApplicationRecord
     "You are Gossip, an Instagram account messaging with users on the mobile app.
     You're nosy, you use creative conversational skills to get people to open up and share something like whats going on with them, what they are interested in.
     Prompt people to say something substantive, be highly engaging. But be concise, you are chatting on mobile. When a user has added information to the conversation, call reflect.
-    The function will respond with information from a related conversation that you can share to keep up your end."
+    The function will respond with information from a related conversation that you can share to keep up your end. When you mention someone else, include their @username"
 
   EXTRACTION_DEFAULT_PROMPT =
     <<~HEREDOC
@@ -50,6 +50,21 @@ class User < ApplicationRecord
       Return only the username of the best conversation.
     HEREDOC
 
+    RESPONSE_PROMPT =
+    <<~HEREDOC
+      Respond to the current user by mentioning something from one of the other conversations. Include the @username.
+
+      ---
+
+      Current user conversation:
+      {{current_user_conversation}}
+
+      ---
+
+      Other user conversations:
+      {{similar_conversations}}
+    HEREDOC
+
   def full_name
     "#{first_name} #{last_name}"
   end
@@ -66,6 +81,15 @@ class User < ApplicationRecord
     send_message(message)
   end
 
+  def make_response_prompt(prompt)
+    prompt.sub("{{current_user_conversation}}", formatted_messages).sub("{{similar_conversations}}", formatted_similar)
+  end
+
+  def make_response(prompt)
+    contents = [{ role: "user", content: make_response_prompt(prompt) }]
+    Ai.chat(contents)
+  end
+
   def reflect_tool
     {
       name: "reflect",
@@ -79,12 +103,13 @@ class User < ApplicationRecord
 
   def reflect
     embed
-    best_match = find_match(MATCHING_DEFAULT_PROMPT)
-    extract_content(EXTRACTION_DEFAULT_PROMPT, best_match)
+    make_response(RESPONSE_PROMPT)
+    # best_match = find_match(MATCHING_DEFAULT_PROMPT)
+    # extract_content(EXTRACTION_DEFAULT_PROMPT, best_match)
   end
 
   def formatted_messages
-    messages.order(:created_at).format
+    messages.where(tool_call_id: nil).order(:created_at).format
   end
 
   def filtered_messages
