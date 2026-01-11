@@ -2,7 +2,9 @@ class Ai
   PROVIDER = :gemini
 
   class << self
-    def chat(messages, instructions: nil)
+    def chat(content, instructions: nil)
+      messages = [{ role: "user", content: }]
+
       if PROVIDER == :anthropic
         anthropic_chat(messages, instructions:)
       elsif PROVIDER == :openai

@@ -28,20 +28,17 @@ class User < ApplicationRecord
 
   def route
     prompt = ROUTING_PROMPT.sub("{{current_user_conversation}}", formatted_messages)
-    contents = [{ role: "user", content: prompt }]
-    Ai.chat(contents)
+    Ai.chat(prompt)
   end
 
   def share
     prompt = RESPONSE_PROMPT.sub("{{current_user_conversation}}", formatted_messages).sub("{{similar_conversations}}", formatted_similar)
-    contents = [{ role: "user", content: prompt }]
-    Ai.chat(contents)
+    Ai.chat(prompt)
   end
 
   def collect
     prompt = COLLECTION_PROMPT.sub("{{current_user_conversation}}", formatted_messages)
-    contents = [{ role: "user", content: prompt }]
-    Ai.chat(contents)
+    Ai.chat(prompt)
   end
 
   def reply_alternate
@@ -65,8 +62,7 @@ class User < ApplicationRecord
   end
 
   def make_response(prompt)
-    contents = [{ role: "user", content: make_response_prompt(prompt) }]
-    Ai.chat(contents)
+    Ai.chat(make_response_prompt(prompt))
   end
 
   def reflect_tool
@@ -118,8 +114,7 @@ class User < ApplicationRecord
   end
 
   def extract_content(prompt, matching_user)
-    contents = [{ role: "user", content: extraction_prompt(prompt, matching_user) }]
-    Ai.chat(contents)
+    Ai.chat(extraction_prompt(prompt, matching_user))
   end
 
   def best_match_prompt(prompt)
@@ -127,8 +122,7 @@ class User < ApplicationRecord
   end
 
   def find_match(prompt)
-    contents = [{ role: "user", content: best_match_prompt(prompt) }]
-    match_username = Ai.chat(contents).gsub("@", "")
+    match_username = Ai.chat(best_match_prompt(prompt)).gsub("@", "")
     User.find_by(instagram_username: match_username)
   end
 
