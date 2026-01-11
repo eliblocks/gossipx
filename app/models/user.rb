@@ -8,62 +8,7 @@ class User < ApplicationRecord
   validates :instagram_id, uniqueness: true, allow_nil: true
   validates :instagram_username, uniqueness: true, allow_nil: true
 
-  DEFAULT_SYSTEM_PROMPT = 
-    "You are Gossip, an Instagram account messaging with users on the mobile app.
-    You're nosy, you use creative conversational skills to get people to open up and share something like whats going on with them, what they are interested in.
-    Prompt people to say something substantive, be highly engaging. But be concise, you are chatting on mobile. When a user has added information to the conversation, call reflect.
-    The function will respond with information from a related conversation that you can share to keep up your end. When you mention someone else, include their @username"
-
-  EXTRACTION_DEFAULT_PROMPT =
-    <<~HEREDOC
-      What's the one thing from the matched conversation that matters most to the current user?
-      State it as a fact about the matched user. Include their @username.
-      Example: @alice is starting salsa lessons in brooklyn next week.
-
-      ---
-
-      Current user conversation:
-      {{current_user_conversation}}
-
-      ---
-
-      Matched conversation:
-      {{matching_conversation}}
-    HEREDOC
-
-  MATCHING_DEFAULT_PROMPT =
-    <<~HEREDOC
-      For the current user conversation, find the single best matching user conversation.
-      The best matching conversation is the one we would most want to refer to when speaking with the current user.
-      The best matching conversation could be interesting or funny or relevant or useful in some way.
-
-      ---
-
-      Current user conversation:
-      {{current_user_conversation}}
-
-      ---
-
-      Other user conversations:
-      {{similar_conversations}}
-
-      Return only the username of the best conversation.
-    HEREDOC
-
-    RESPONSE_PROMPT =
-    <<~HEREDOC
-      Respond to the current user by mentioning something from one of the other conversations. Include the @username.
-
-      ---
-
-      Current user conversation:
-      {{current_user_conversation}}
-
-      ---
-
-      Other user conversations:
-      {{similar_conversations}}
-    HEREDOC
+  include Prompts
 
   def full_name
     "#{first_name} #{last_name}"
@@ -78,6 +23,40 @@ class User < ApplicationRecord
   def reply
     previous_messages = messages.order(:created_at).to_a
     message = claude.chat(previous_messages, system_prompt: DEFAULT_SYSTEM_PROMPT, tools: [reflect_tool], type: "conversation")
+    send_message(message)
+  end
+
+  def route
+    prompt = ROUTING_PROMPT.sub("{{current_user_conversation}}", formatted_messages)
+    contents = [{ role: "user", content: prompt }]
+    Ai.chat(contents)
+  end
+
+  def share
+    prompt = RESPONSE_PROMPT.sub("{{current_user_conversation}}", formatted_messages).sub("{{similar_conversations}}", formatted_similar)
+    contents = [{ role: "user", content: prompt }]
+    Ai.chat(contents)
+  end
+
+  def collect
+    prompt = COLLECTION_PROMPT.sub("{{current_user_conversation}}", formatted_messages)
+    contents = [{ role: "user", content: prompt }]
+    Ai.chat(contents)
+  end
+
+  def reply_alternate
+    status = route
+
+    res = ""
+
+    if status == "share"
+      embed
+      res = share
+    else
+      res = collect
+    end
+
+    message = messages.create(role: "assistant", content: res)
     send_message(message)
   end
 
