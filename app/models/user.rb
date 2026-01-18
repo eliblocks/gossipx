@@ -2,7 +2,7 @@ class User < ApplicationRecord
   # :confirmable, :lockable, :timeoutable, :trackable, :omniauthable, :registerable,
   devise :database_authenticatable, :recoverable, :rememberable, :validatable
 
-  has_many :messages
+  has_many :messages, dependent: :destroy
   has_neighbors :embedding
 
   validates :instagram_id, uniqueness: true, allow_nil: true
