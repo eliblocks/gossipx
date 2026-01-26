@@ -34,8 +34,9 @@ class UsersController < ApplicationController
     @user = User.find(params[:id])
     @user.assign_attributes(user_params)
 
-    @user.instagram_id = nil unless @user.instagram_id.present?
-    @user.instagram_username = nil unless @user.instagram_username.present?
+    @user.instagram_id = @user.instagram_id.presence
+    @user.instagram_username = @user.instagram_username.presence
+    @user.phone = @user.phone.presence
 
     @user.save!
 
@@ -60,6 +61,6 @@ class UsersController < ApplicationController
   private
 
   def user_params
-    params.require(:user).permit(:email, :first_name, :last_name, :instagram_id, :instagram_username, :role).compact_blank
+    params.require(:user).permit(:email, :phone, :first_name, :last_name, :instagram_id, :instagram_username, :role)
   end
 end
