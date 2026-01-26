@@ -27,8 +27,11 @@ class Whatsapp
         to: phone,
         type: "contacts",
         contacts: [ {
-          name: { formatted_name: user.full_name },
-          phones: [ { phone: contact_phone } ]
+          name: {
+            first_name: user.first_name,
+            last_name: user.last_name
+          },
+          phones: [ { phone: contact_phone, type: "CELL" } ]
         } ]
       })
     end
