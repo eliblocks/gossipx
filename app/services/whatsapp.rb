@@ -17,5 +17,20 @@ class Whatsapp
         text: { "body": text }
       })
     end
+
+    def send_contact(phone, contact_phone)
+      user = User.find_by(phone: contact_phone)
+      return unless user
+
+      http.post("#{BASE_URL}/#{ENV["WHATSAPP_PHONE_ID"]}/messages", json: {
+        messaging_product: "whatsapp",
+        to: phone,
+        type: "contacts",
+        contacts: [ {
+          name: { formatted_name: user.full_name },
+          phones: [ { phone: contact_phone } ]
+        } ]
+      })
+    end
   end
 end

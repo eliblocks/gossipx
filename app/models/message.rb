@@ -17,7 +17,7 @@ class Message < ApplicationRecord
     elsif user.instagram_username
       label = "@#{user.instagram_username}"
     elsif user.phone
-      label = user.phone
+      label = "<#{user.phone}> #{user.full_name}"
     end
 
     "#{label}: #{content}"
