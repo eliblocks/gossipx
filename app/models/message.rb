@@ -10,7 +10,16 @@ class Message < ApplicationRecord
   end
 
   def format
-    label = (role == "user" ? "@#{user.instagram_username}" : "bot")
+    label = ""
+
+    if role == "assistant"
+      label = "bot"
+    elsif user.instagram_username
+      label = "@#{user.instagram_username}"
+    elsif user.phone
+      label = user.phone
+    end
+
     "#{label}: #{content}"
   end
 end

@@ -14,7 +14,7 @@ class User < ApplicationRecord
     "#{first_name} #{last_name}"
   end
 
-  def handle_message(content, now=false)
+  def handle_message(content, now = false)
     messages.create!(role: "user", content:)
 
     now ? ReplyJob.perform_now(id) : ReplyJob.perform_later(id)
@@ -22,7 +22,7 @@ class User < ApplicationRecord
 
   def reply
     previous_messages = messages.order(:created_at).to_a
-    message = claude.chat(previous_messages, system_prompt: DEFAULT_SYSTEM_PROMPT, tools: [reflect_tool], type: "conversation")
+    message = claude.chat(previous_messages, system_prompt: DEFAULT_SYSTEM_PROMPT, tools: [ reflect_tool ], type: "conversation")
     send_message(message)
   end
 
@@ -71,7 +71,7 @@ class User < ApplicationRecord
       description: "Search for related content",
       input_schema: {
         type: "object",
-        properties: {},
+        properties: {}
       }
     }
   end
@@ -92,7 +92,7 @@ class User < ApplicationRecord
   end
 
   def conversation
-    messages.map { |message| {role: message.role, content: message.content} }
+    messages.map { |message| { role: message.role, content: message.content } }
   end
 
   def embed
@@ -127,10 +127,13 @@ class User < ApplicationRecord
   end
 
   def send_message(message)
-    return unless instagram_id
     return unless Rails.env == "production"
 
-    Instagram.send_message(instagram_id, message.content)
+    if instagram_id
+      Instagram.send_message(instagram_id, message.content)
+    elsif phone
+      Whatsapp.send_message(phone, message.content)
+    end
   end
 
   def claude

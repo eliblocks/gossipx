@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_07_022546) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_26_000050) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -129,6 +129,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_07_022546) do
     t.string "instagram_id"
     t.string "instagram_username"
     t.string "last_name"
+    t.string "phone"
     t.datetime "remember_created_at"
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
@@ -136,6 +137,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_07_022546) do
     t.text "summary"
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["phone"], name: "index_users_on_phone", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 

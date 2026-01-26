@@ -1,6 +1,5 @@
 class Instagram
   BASE_URL = "https://graph.instagram.com/v21.0"
-  HEADERS = { "Content-Type" => "application/json" }
 
   class << self
     def http
