@@ -25,6 +25,8 @@ Rails.application.routes.draw do
   post "/webhooks/instagram", to: "webhooks#instagram"
   get "/webhooks/whatsapp", to: "webhooks#verify_whatsapp"
   post "/webhooks/whatsapp", to: "webhooks#whatsapp"
+  get "/webhooks/messenger", to: "webhooks#verify_messenger"
+  post "/webhooks/messenger", to: "webhooks#messenger"
 
   authenticate :user, ->(user) { user.role == "admin" } do
     mount GoodJob::Engine => "good_job"

@@ -65,4 +65,8 @@ class WebhooksController < ActionController::API
 
     head :ok
   end
+
+  def verify_messenger
+    render json: params["hub.challenge"]
+  end
 end
