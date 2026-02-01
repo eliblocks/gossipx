@@ -69,4 +69,10 @@ class WebhooksController < ActionController::API
   def verify_messenger
     render json: params["hub.challenge"]
   end
+
+  def messenger
+    Rails.logger.info(params)
+
+    head :ok
+  end
 end
