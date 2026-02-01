@@ -9,7 +9,7 @@ class Facebook
     end
 
     def profile(id)
-      http.get("#{BASE_URL}/#{id}", params: { fields: "name,username" })
+      http.get("#{BASE_URL}/#{id}", params: { fields: "name" })
     end
 
     def send_message(id, text)
