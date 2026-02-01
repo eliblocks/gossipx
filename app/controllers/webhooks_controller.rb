@@ -71,8 +71,34 @@ class WebhooksController < ActionController::API
   end
 
   def messenger
-    Rails.logger.info(params)
+    messaging = params.dig("entry", 0, "messaging", 0)
+    facebook_id = messaging.dig("sender", "id")
+    text = messaging.dig("message", "text")
+
+    return head :ok unless text
+    return head :ok if facebook_id == ENV["FACEBOOK_PROFILE_ID"]
+
+    user = User.find_or_initialize_by(facebook_id:) do |user|
+      user.email = "#{facebook_id}@example.com"
+      user.password = SecureRandom.hex
+    end
+
+    profile = JSON.parse(Facebook.profile(facebook_id))
+    user.facebook_username = profile["username"]
+    names = profile["name"]&.split(" ")
+
+    if names
+      user.last_name = names.pop
+      user.first_name = names.join(" ")
+    end
+
+    user.save!
+
+    user.handle_message(text)
 
     head :ok
   end
 end
+
+
+# {"object"=>"page", "entry"=>[{"time"=>1769966070802, "id"=>"964327160100994", "messaging"=>[{"sender"=>{"id"=>"33543760561937537"}, "recipient"=>{"id"=>"964327160100994"}, "timestamp"=>1769965905027, "message"=>{"mid"=>"m_7vQj7ar3g17XZ8T4jqCjAzxx6GuHV6ksh0ygwLiSX2v3PyYVowXHTHFh2ursK9kBLQ7tWQmW5B6Dtk9lZvWPkg", "text"=>"Hello"}}]}], "webhook"=>{"object"=>"page", "entry"=>[{"time"=>1769966070802, "id"=>"964327160100994", "messaging"=>[{"sender"=>{"id"=>"33543760561937537"}, "recipient"=>{"id"=>"964327160100994"}, "timestamp"=>1769965905027, "message"=>{"mid"=>"m_7vQj7ar3g17XZ8T4jqCjAzxx6GuHV6ksh0ygwLiSX2v3PyYVowXHTHFh2ursK9kBLQ7tWQmW5B6Dtk9lZvWPkg", "text"=>"Hello"}}]}]}}

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_26_000050) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_01_173334) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -125,6 +125,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_26_000050) do
     t.string "email", default: "", null: false
     t.vector "embedding"
     t.string "encrypted_password", default: "", null: false
+    t.string "facebook_id"
+    t.string "facebook_username"
     t.string "first_name"
     t.string "instagram_id"
     t.string "instagram_username"
@@ -137,6 +139,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_26_000050) do
     t.text "summary"
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["facebook_id"], name: "index_users_on_facebook_id", unique: true
+    t.index ["facebook_username"], name: "index_users_on_facebook_username", unique: true
     t.index ["phone"], name: "index_users_on_phone", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end

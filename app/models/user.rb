@@ -33,27 +33,29 @@ class User < ApplicationRecord
 
   def collect
     prompt = collection_prompt.sub("{{current_user_conversation}}", formatted_messages)
+    Rails.logger.info(prompt)
     Ai.chat(prompt)
   end
 
   def routing_prompt
-    instagram_id ? ROUTING_PROMPT : WHATSAPP_ROUTING_PROMPT
+    phone ? WHATSAPP_ROUTING_PROMPT : ROUTING_PROMPT
   end
 
   def response_prompt
-    instagram_id ? RESPONSE_PROMPT : WHATSAPP_RESPONSE_PROMPT
+    phone ? WHATSAPP_RESPONSE_PROMPT : RESPONSE_PROMPT
   end
 
   def collection_prompt
-    instagram_id ? COLLECTION_PROMPT : WHATSAPP_COLLECTION_PROMPT
+    phone ? WHATSAPP_COLLECTION_PROMPT : COLLECTION_PROMPT
   end
 
-  def reply_alternate
+  def reply
     status = route
 
     res = ""
 
     if status == "share"
+      Rails.logger.info("\nSHARE\n")
       embed
       res = share
 
@@ -65,6 +67,7 @@ class User < ApplicationRecord
         Rails.logger.info("PHONE: #{contact_phone}")
       end
     else
+      Rails.logger.info("\nCOLLECT\n")
       res = collect
     end
 
@@ -76,24 +79,8 @@ class User < ApplicationRecord
     end
   end
 
-  def make_response_prompt(prompt)
-    prompt.sub("{{current_user_conversation}}", formatted_messages).sub("{{similar_conversations}}", formatted_similar)
-  end
-
-  def make_response(prompt)
-    Ai.chat(make_response_prompt(prompt))
-  end
-
   def formatted_messages
     messages.where(tool_call_id: nil).order(:created_at).format
-  end
-
-  def filtered_messages
-    formatted_messages.gsub(/@\w+/, "@********")
-  end
-
-  def conversation
-    messages.map { |message| { role: message.role, content: message.content } }
   end
 
   def embed
@@ -105,6 +92,8 @@ class User < ApplicationRecord
   def similar
     if phone
       User.where.not(id: id).where.not(phone: nil).nearest_neighbors(:embedding, embedding, distance: "euclidean").first(20)
+    elsif facebook_username
+      User.where.not(id: id).where.not(facebook_username: nil).nearest_neighbors(:embedding, embedding, distance: "euclidean").first(20)
     elsif instagram_username
       User.where.not(id: id).where.not(instagram_username: nil).nearest_neighbors(:embedding, embedding, distance: "euclidean").first(20)
     end
@@ -114,34 +103,15 @@ class User < ApplicationRecord
     similar.map(&:formatted_messages).join("\n")
   end
 
-  def extraction_prompt(prompt, matching_user)
-    prompt.sub("{{current_user_conversation}}", formatted_messages).sub("{{matching_conversation}}", matching_user.formatted_messages)
-  end
-
-  def extract_content(prompt, matching_user)
-    Ai.chat(extraction_prompt(prompt, matching_user))
-  end
-
-  def best_match_prompt(prompt)
-    prompt.sub("{{current_user_conversation}}", formatted_messages).sub("{{similar_conversations}}", formatted_similar)
-  end
-
-  def find_match(prompt)
-    match_username = Ai.chat(best_match_prompt(prompt)).gsub("@", "")
-    User.find_by(instagram_username: match_username)
-  end
-
   def send_message(message)
     return unless Rails.env.production?
 
     if instagram_id
       Instagram.send_message(instagram_id, message.content)
+    elsif facebook_id
+      Facebook.send_message(facebook_id, message.content)
     elsif phone
       Whatsapp.send_message(phone, message.content)
     end
-  end
-
-  def claude
-    Claude.new(self)
   end
 end
