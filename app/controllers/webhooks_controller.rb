@@ -98,7 +98,12 @@ class WebhooksController < ActionController::API
 
     head :ok
   end
+
+  def verify_twitter
+    head :ok
+  end
+
+  def twitter
+    head :ok
+  end
 end
-
-
-# {"object"=>"page", "entry"=>[{"time"=>1769966070802, "id"=>"964327160100994", "messaging"=>[{"sender"=>{"id"=>"33543760561937537"}, "recipient"=>{"id"=>"964327160100994"}, "timestamp"=>1769965905027, "message"=>{"mid"=>"m_7vQj7ar3g17XZ8T4jqCjAzxx6GuHV6ksh0ygwLiSX2v3PyYVowXHTHFh2ursK9kBLQ7tWQmW5B6Dtk9lZvWPkg", "text"=>"Hello"}}]}], "webhook"=>{"object"=>"page", "entry"=>[{"time"=>1769966070802, "id"=>"964327160100994", "messaging"=>[{"sender"=>{"id"=>"33543760561937537"}, "recipient"=>{"id"=>"964327160100994"}, "timestamp"=>1769965905027, "message"=>{"mid"=>"m_7vQj7ar3g17XZ8T4jqCjAzxx6GuHV6ksh0ygwLiSX2v3PyYVowXHTHFh2ursK9kBLQ7tWQmW5B6Dtk9lZvWPkg", "text"=>"Hello"}}]}]}}
