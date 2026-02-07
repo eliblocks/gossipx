@@ -103,7 +103,7 @@ class WebhooksController < ActionController::API
     crc_token = params[:crc_token]
     return head :bad_request unless crc_token
 
-    hash = OpenSSL::HMAC.digest("sha256", ENV["TWITTER_CONSUMER_KEY"], crc_token)
+    hash = OpenSSL::HMAC.digest("sha256", ENV["TWITTER_CONSUMER_SECRET"], crc_token)
     response_token = "sha256=#{Base64.strict_encode64(hash)}"
 
     render json: { response_token: }
