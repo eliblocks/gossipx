@@ -1,9 +1,0 @@
-[     777ms] [WARNING] Could not find "Past Broadcasts" heading @ :317
-[     777ms] [WARNING] Cannot create carousel: heading found = false , broadcasts = 0 @ :345
-[     777ms] [WARNING] No carousel container available, skipping card creation @ :353
-[    1335ms] [WARNING] Could not find "Past Broadcasts" heading @ :317
-[    1335ms] [WARNING] Cannot create carousel: heading found = false , broadcasts = 0 @ :345
-[    1335ms] [WARNING] No carousel container available, skipping card creation @ :353
-[    1779ms] [WARNING] Could not find "Past Broadcasts" heading @ :317
-[    1779ms] [WARNING] Cannot create carousel: heading found = false , broadcasts = 0 @ :345
-[    1779ms] [WARNING] No carousel container available, skipping card creation @ :353
