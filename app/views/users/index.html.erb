@@ -13,8 +13,6 @@
   <thead>
     <tr>
       <th>Username</th>
-      <th>Phone</th>
-      <th>Name</th>
       <th>Role</th>
       <th>Messages</th>
       <th>Summary</th>
@@ -25,8 +23,6 @@
     <% @users.each do |user| %>
       <tr>
         <td><%= user.instagram_username %></td>
-        <td><%= user.phone %></td>
-        <td><%= user.full_name %></td>
         <td><%= user.role %></td>
         <td><%= user.messages.count %></td>
         <td><%= user.summary&.truncate(100) %></td>

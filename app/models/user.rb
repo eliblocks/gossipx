@@ -22,31 +22,19 @@ class User < ApplicationRecord
   end
 
   def route
-    prompt = routing_prompt.sub("{{current_user_conversation}}", formatted_messages)
+    prompt = ROUTING_PROMPT.sub("{{current_user_conversation}}", formatted_messages)
     Ai.chat(prompt)
   end
 
   def share
-    prompt = response_prompt.sub("{{current_user_conversation}}", formatted_messages).sub("{{similar_conversations}}", formatted_similar)
+    prompt = RESPONSE_PROMPT.sub("{{current_user_conversation}}", formatted_messages).sub("{{similar_conversations}}", formatted_similar)
     Ai.chat(prompt)
   end
 
   def collect
-    prompt = collection_prompt.sub("{{current_user_conversation}}", formatted_messages)
+    prompt = COLLECTION_PROMPT.sub("{{current_user_conversation}}", formatted_messages)
     Rails.logger.info(prompt)
     Ai.chat(prompt)
-  end
-
-  def routing_prompt
-    phone ? WHATSAPP_ROUTING_PROMPT : ROUTING_PROMPT
-  end
-
-  def response_prompt
-    phone ? WHATSAPP_RESPONSE_PROMPT : RESPONSE_PROMPT
-  end
-
-  def collection_prompt
-    phone ? WHATSAPP_COLLECTION_PROMPT : COLLECTION_PROMPT
   end
 
   def reply
@@ -58,14 +46,6 @@ class User < ApplicationRecord
       Rails.logger.info("\nSHARE\n")
       embed
       res = share
-
-      if phone
-        number_str = res.match(/<\d+>/).to_s
-        contact_phone = number_str.delete("<>")
-        res.sub!(number_str, "")
-
-        Rails.logger.info("PHONE: #{contact_phone}")
-      end
     else
       Rails.logger.info("\nCOLLECT\n")
       res = collect
@@ -73,10 +53,6 @@ class User < ApplicationRecord
 
     message = messages.create(role: "assistant", content: res)
     send_message(message)
-
-    if status == "share" && phone && Rails.env.production?
-      Whatsapp.send_contact(phone, contact_phone)
-    end
   end
 
   def formatted_messages
@@ -90,13 +66,7 @@ class User < ApplicationRecord
   end
 
   def similar
-    if phone
-      User.where.not(id: id).where.not(phone: nil).nearest_neighbors(:embedding, embedding, distance: "euclidean").first(20)
-    elsif facebook_username
-      User.where.not(id: id).where.not(facebook_username: nil).nearest_neighbors(:embedding, embedding, distance: "euclidean").first(20)
-    elsif instagram_username
-      User.where.not(id: id).where.not(instagram_username: nil).nearest_neighbors(:embedding, embedding, distance: "euclidean").first(20)
-    end
+    User.where.not(id: id).where.not(instagram_username: nil).nearest_neighbors(:embedding, embedding, distance: "euclidean").first(20)
   end
 
   def formatted_similar
@@ -106,12 +76,6 @@ class User < ApplicationRecord
   def send_message(message)
     return unless Rails.env.production?
 
-    if instagram_id
-      Instagram.send_message(instagram_id, message.content)
-    elsif facebook_id
-      Facebook.send_message(facebook_id, message.content)
-    elsif phone
-      Whatsapp.send_message(phone, message.content)
-    end
+    Instagram.send_message(instagram_id, message.content)
   end
 end
