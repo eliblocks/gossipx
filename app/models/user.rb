@@ -41,8 +41,9 @@ class User < ApplicationRecord
     status = route
 
     res = ""
-
-    if status == "share"
+    if instagram_username == "eli.block.7"
+      res = "@daniel.murphy literally just told me he's trying to LEAVE Austin. You two should swap notes before you make a terrible decision together 😭"
+    elsif status == "share"
       Rails.logger.info("\nSHARE\n")
       embed
       res = share
