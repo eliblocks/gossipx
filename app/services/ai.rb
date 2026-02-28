@@ -3,7 +3,7 @@ class Ai
 
   class << self
     def chat(content, instructions: nil)
-      messages = [{ role: "user", content: }]
+      messages = [ { role: "user", content: } ]
 
       if PROVIDER == :anthropic
         anthropic_chat(messages, instructions:)
@@ -24,12 +24,12 @@ class Ai
       }
 
       parameters[:instructions] = instructions if instructions
-    
+
       OpenAI::Client.new.responses.create(parameters).output_text
     end
 
     def anthropic_chat(messages, instructions: nil)
-      params = { 
+      params = {
         model: "claude-opus-4-5",
         max_tokens: 8000,
         thinking: {
@@ -46,15 +46,15 @@ class Ai
     end
 
     def gemini_chat(messages, instructions: nil)
-      url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent"
+      url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent"
       client = HTTP.headers(
         "x-goog-api-key" => ENV.fetch("GEMINI_API_KEY"),
         "Content-Type" => "application/json"
       )
 
       contents = messages.map { |message| { role: message[:role], parts: { text: message[:content] } } }
-      payload = { contents: contents}
-      payload[:system_instruction] = { parts: [{ text: instructions }] } if instructions
+      payload = { contents: contents }
+      payload[:system_instruction] = { parts: [ { text: instructions } ] } if instructions
 
       response = client.post(url, json: payload)
       parts = response.parse.dig("candidates", 0, "content", "parts")
