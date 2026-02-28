@@ -28,6 +28,7 @@ class User < ApplicationRecord
 
   def share
     prompt = RESPONSE_PROMPT.sub("{{current_user_conversation}}", formatted_messages).sub("{{similar_conversations}}", formatted_similar)
+    Rails.logger.info(prompt)
     Ai.chat(prompt)
   end
 
