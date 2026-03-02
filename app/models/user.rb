@@ -15,10 +15,26 @@ class User < ApplicationRecord
     "#{first_name} #{last_name}"
   end
 
+  DAILY_MESSAGE_LIMIT = 50
+  MONTHLY_MESSAGE_LIMIT = 500
+  MAX_CONVERSATION_LENGTH = 30_000
+
   def handle_message(content, now = false)
     messages.create!(role: "user", content:)
 
     now ? ReplyJob.perform_now(id) : ReplyJob.perform_later(id)
+  end
+
+  def daily_messages
+    messages.where("created_at >= ?", 1.day.ago).count
+  end
+
+  def monthly_messages
+    messages.where("created_at >= ?", 1.month.ago).count
+  end
+
+  def rate_limited?
+    daily_messages > DAILY_MESSAGE_LIMIT || monthly_messages > MONTHLY_MESSAGE_LIMIT
   end
 
   def route
@@ -38,24 +54,28 @@ class User < ApplicationRecord
     Ai.chat(prompt)
   end
 
-  def reply
-    status = route
-
-    if status == "share"
-      Rails.logger.info("\nSHARE\n")
-      embed
-      res = share
-    else
-      Rails.logger.info("\nCOLLECT\n")
-      res = collect
+  def chat_response
+    if rate_limited?
+      return "I can't chat all day! Let's talk more later"
     end
 
-    message = messages.create(role: "assistant", content: res)
+    if route == "share"
+      Rails.logger.info("SHARE")
+      embed
+      share
+    else
+      Rails.logger.info("COLLECT")
+      collect
+    end
+  end
+
+  def reply
+    message = messages.create(role: "assistant", content: chat_response)
     send_message(message)
   end
 
   def formatted_messages
-    messages.where(tool_call_id: nil).order(:created_at).format
+    messages.where(tool_call_id: nil).order(:created_at).format.last(MAX_CONVERSATION_LENGTH)
   end
 
   def embed
