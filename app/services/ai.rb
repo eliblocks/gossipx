@@ -1,5 +1,5 @@
 class Ai
-  PROVIDER = :gemini
+  PROVIDER = :anthropic
 
   class << self
     def chat(content, instructions: nil)
@@ -30,7 +30,7 @@ class Ai
 
     def anthropic_chat(messages, instructions: nil)
       params = {
-        model: "claude-opus-4-5",
+        model: "claude-opus-4-6",
         max_tokens: 8000,
         thinking: {
           type: :enabled,
