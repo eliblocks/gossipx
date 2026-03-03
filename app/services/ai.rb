@@ -1,5 +1,5 @@
 class Ai
-  PROVIDER = :anthropic
+  PROVIDER = :gemini
 
   class << self
     def chat(content, instructions: nil)
