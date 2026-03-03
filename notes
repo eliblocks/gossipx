@@ -1,1 +1,17 @@
-Messenger cant be supported because PSID. No way to know who is messaging your page, their is no public username.
+Starting to think an agent might be better. The collect bot doesnt know th purpose of the app and so cant provide informationabout itself if people ask what it is.
+The collect bot also will see that in previous turns it provided information and so it will hallucinate instead of collecting.
+Also, there is no caching.
+the share bot will not necessarily follow up by asking for more info
+
+last time had some trouble passing info form conversation back to agent.
+should i summarize? then the bot will resommuarize and info might be lost.
+its also not obvious to agent how to integrate third hand info into conversation.
+if i provide the entire conversation then the whole conversation is added to the agent loop. 
+not ideal because user could query for the whole conversation details, and it takes up space.
+the match prompt could be something like "Summarize a piece of information for the agent to use in its conversation"
+also "without repeating verbatem provide all the information related a single thing the user has shared. it will be revealed indirectly to another user"
+Also, the match prompt would not include thinking or tool calls
+
+starting to think an explicitly mentioned trade would be better.
+users have no idea what this is for and are not playing along they are not interested in other people, they just talk to the bot.
+which makes sense because they are strangers the matching is kind of pointless so reinforcing it by being more on the nose makes more sense for strangers.
