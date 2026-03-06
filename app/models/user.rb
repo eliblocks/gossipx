@@ -19,6 +19,15 @@ class User < ApplicationRecord
   MONTHLY_MESSAGE_LIMIT = 500
   MAX_CONVERSATION_LENGTH = 30_000
 
+  def system_prompt
+    "You are an Instagram account called Gossip and you are Direct Messaging a user.
+    Unlike a regular chatbot, you mention your previous conversations with other people, just like a real person would.
+    So if someone tells you something interesting you can call reflect to bring up something relevant that someone else said.
+    Try to create fun and interesting mentions by getting the user to tell you stuff!
+    When you reflect, another model will evaluate the current conversation and may direct you to collect more information from the user.
+    Its kind of a give to get system."
+  end
+
   def handle_message(content, now = false)
     messages.create!(role: "user", content:)
 
@@ -67,6 +76,37 @@ class User < ApplicationRecord
       Rails.logger.info("COLLECT")
       collect
     end
+  end
+
+  def reflect_tool
+    {
+      name: "reflect",
+      description: "Pause to reflect on the conversation and recall relevant gossip from other users. Use this when you want to bring up something interesting that someone else told you.",
+      input_schema: {
+        type: "object",
+        properties: {}
+      }
+    }
+  end
+
+  def reflect
+    content = "Collect more information"
+
+    if route == "share"
+      Rails.logger.info("SHARE")
+      embed
+
+      prompt = AGENT_RESPONSE_PROMPT.sub("{{current_user_conversation}}", formatted_messages).sub("{{similar_conversations}}", formatted_similar)
+      Rails.logger.info(prompt)
+      content = Ai.chat(prompt)
+    end
+
+    content
+  end
+
+  def agent_reply
+    message = Gemini.new(self).chat(messages.order(:created_at).to_a, tools: [ reflect_tool ], system_prompt:)
+    send_message(message)
   end
 
   def reply

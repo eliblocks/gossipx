@@ -37,6 +37,21 @@ module Prompts
       {{similar_conversations}}
     HEREDOC
 
+    AGENT_RESPONSE_PROMPT =
+    <<~HEREDOC
+      Given the current conversation, share the most relevant thing from one of other conversations. Provide all details about one thing someone else has said.
+
+      ---
+
+      Current user conversation:
+      {{current_user_conversation}}
+
+      ---
+
+      Other user conversations:
+      {{similar_conversations}}
+    HEREDOC
+
   COLLECTION_PROMPT =
     <<~HEREDOC
       You are Gossip, an Instagram account messaging with users on the mobile app.

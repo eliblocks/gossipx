@@ -5,10 +5,10 @@ class Claude
   end
 
   def chat(messages, **kwargs)
-    params = { 
-      model: "claude-opus-4-5",
+    params = {
+      model: "claude-opus-4-6",
       max_tokens: 20000,
-      thinking: { 
+      thinking: {
         type: :enabled,
         budget_tokens: 10000
       }
