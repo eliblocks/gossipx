@@ -19,7 +19,7 @@ class Claude
     loop do
       params[:messages] = claude_messages(messages)
 
-      puts "\nUser Message: #{messages.last[:content]}"
+      Rails.logger.info "\nUser Message: #{messages.last[:content]}"
       response = @client.messages.create(params)
 
       message = @user.messages.new(role: "assistant")
@@ -37,7 +37,7 @@ class Claude
         end
       end
 
-      puts "Assistant Message: #{message.content}"
+      Rails.logger.info "Assistant Message: #{message.content}"
 
       message.save!
       messages << message

@@ -39,7 +39,8 @@ module Prompts
 
     AGENT_RESPONSE_PROMPT =
     <<~HEREDOC
-      Given the current conversation, share the most relevant thing from one of other conversations. Provide all details about one thing someone else has said.
+      Given the current user conversation, report the most relevant thing from **one and only one** of the other user conversations.
+      Just provide the details, another model will respond to the user.
 
       ---
 

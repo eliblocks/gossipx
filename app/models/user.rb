@@ -81,7 +81,7 @@ class User < ApplicationRecord
   def reflect_tool
     {
       name: "reflect",
-      description: "Pause to reflect on the conversation and recall relevant gossip from other users. Use this when you want to bring up something interesting that someone else told you.",
+      description: "Recall something relevant from one of your previous conversations with other people.",
       input_schema: {
         type: "object",
         properties: {}

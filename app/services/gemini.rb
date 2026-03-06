@@ -7,13 +7,13 @@ class Gemini
 
   def chat(messages, **kwargs)
     body = {}
-    body[:systemInstruction] = { parts: [{ text: kwargs[:system_prompt] }] } if kwargs[:system_prompt]
-    body[:tools] = [{ functionDeclarations: kwargs[:tools].map { |t| { name: t[:name], description: t[:description], parameters: t[:input_schema] } } }] if kwargs[:tools]
+    body[:systemInstruction] = { parts: [ { text: kwargs[:system_prompt] } ] } if kwargs[:system_prompt]
+    body[:tools] = [ { functionDeclarations: kwargs[:tools].map { |t| { name: t[:name], description: t[:description], parameters: t[:input_schema] } } } ] if kwargs[:tools]
 
     loop do
       body[:contents] = gemini_contents(messages)
 
-      puts "\nUser Message: #{messages.last[:content]}"
+      Rails.logger.info "\nUser Message: #{messages.last[:content]}"
       data = HTTP.post("#{URL}?key=#{ENV.fetch('GEMINI_API_KEY')}", json: body).parse
 
       parts = data.dig("candidates", 0, "content", "parts")
@@ -33,7 +33,7 @@ class Gemini
         end
       end
 
-      puts "Assistant Message: #{message.content}"
+      Rails.logger.info "Assistant Message: #{message.content}"
       message.save!
       messages << message
 
