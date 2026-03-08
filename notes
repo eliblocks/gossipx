@@ -15,3 +15,6 @@ Also, the match prompt would not include thinking or tool calls
 starting to think an explicitly mentioned trade would be better.
 users have no idea what this is for and are not playing along they are not interested in other people, they just talk to the bot.
 which makes sense because they are strangers the matching is kind of pointless so reinforcing it by being more on the nose makes more sense for strangers.
+
+
+Im talking to the current user, and I also have access to other user conversations. For the current user I need to report the single most relevant thing from one of the other conversations. I want a summary that includes all relevant details rin the third person format. Such as @username said..., or @username did.., @username wants.... No need to editorialize or justify or introduce. Just respond with the information. If you followed my intructions correctly your response will include exactly one username.

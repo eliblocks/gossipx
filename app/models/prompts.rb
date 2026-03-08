@@ -39,8 +39,7 @@ module Prompts
 
     AGENT_RESPONSE_PROMPT =
     <<~HEREDOC
-      Given the current user conversation, report the most relevant thing from **one and only one** of the other user conversations.
-      Just provide the details, another model will respond to the user.
+      Im talking to the current user, and I also have access to other user conversations. For the current user I need to report the single most relevant thing from one of the other conversations. I want a summary that includes all relevant details rin the third person format. Such as @username said..., or @username did.., @username wants.... No need to editorialize or justify or introduce. Just respond with the information. If you followed my intructions correctly your response will include exactly one username.
 
       ---
 
