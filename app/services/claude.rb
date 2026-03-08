@@ -16,18 +16,13 @@ class Claude
     params[:tools] = kwargs[:tools] if kwargs[:tools]
     params[:system] = kwargs[:system_prompt] if kwargs[:system_prompt]
 
-    # Messages at indices < initial_count are from DB and may have
-    # Gemini thinking signatures that Claude will reject. Only preserve
-    # thinking blocks for messages created by Claude in the current loop.
-    initial_count = messages.length
-
     loop do
-      params[:messages] = claude_messages(messages, preserve_thinking_after: initial_count)
+      params[:messages] = claude_messages(messages)
 
       Rails.logger.info "\nUser Message: #{messages.last[:content]}"
       response = @client.messages.create(params)
 
-      message = @user.messages.new(role: "assistant")
+      message = @user.messages.new(role: "assistant", provider: "anthropic")
 
       response.content.each do |item|
         if item.type == :thinking
@@ -60,11 +55,11 @@ class Claude
     messages.last
   end
 
-  def claude_messages(messages, preserve_thinking_after: 0)
+  def claude_messages(messages)
     messages.each_with_index.map do |message, idx|
       content_blocks = []
 
-      if message.thinking && idx >= preserve_thinking_after
+      if message.thinking && message.provider == "anthropic"
         content_blocks << { type: "thinking", thinking: message.thinking, signature: message.thinking_signature }
       end
 

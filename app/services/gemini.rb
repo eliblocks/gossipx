@@ -17,7 +17,7 @@ class Gemini
       data = HTTP.post("#{URL}?key=#{ENV.fetch('GEMINI_API_KEY')}", json: body).parse
 
       parts = data.dig("candidates", 0, "content", "parts")
-      message = @user.messages.new(role: "assistant")
+      message = @user.messages.new(role: "assistant", provider: "gemini")
 
       parts.each do |part|
         message.thinking_signature = part["thoughtSignature"] if part["thoughtSignature"]
@@ -56,7 +56,7 @@ class Gemini
     messages.map do |message|
       parts = []
 
-      if message.thinking
+      if message.thinking && provider == "gemini"
         parts << { text: message.thinking, thought: true }
       end
 
