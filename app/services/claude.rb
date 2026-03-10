@@ -19,7 +19,7 @@ class Claude
     loop do
       params[:messages] = claude_messages(messages)
 
-      Rails.logger.info "\nUser Message: #{messages.last[:content]}"
+      Rails.logger.info "\nUser Message: #{messages.last&.content}"
       response = @client.messages.create(params)
 
       message = @user.messages.new(role: "assistant", provider: "anthropic")

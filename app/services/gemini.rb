@@ -13,7 +13,7 @@ class Gemini
     loop do
       body[:contents] = gemini_contents(messages)
 
-      Rails.logger.info "\nUser Message: #{messages.last[:content]}"
+      Rails.logger.info "\nUser Message: #{messages.last&.content}"
       data = HTTP.post("#{URL}?key=#{ENV.fetch('GEMINI_API_KEY')}", json: body).parse
 
       parts = data.dig("candidates", 0, "content", "parts")
