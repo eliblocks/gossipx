@@ -105,7 +105,7 @@ class User < ApplicationRecord
   end
 
   def agent_reply
-    message = Claude.new(self).chat(messages.order(:created_at).to_a, tools: [ reflect_tool ], system_prompt:)
+    message = Gemini.new(self).chat(messages.order(:created_at).to_a, tools: [ reflect_tool ], system_prompt:)
     send_message(message)
   end
 
