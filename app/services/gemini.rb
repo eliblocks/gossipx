@@ -56,7 +56,7 @@ class Gemini
     messages.map do |message|
       parts = []
 
-      if message.thinking && provider == "gemini"
+      if message.thinking && message.provider == "gemini"
         parts << { text: message.thinking, thought: true }
       end
 
