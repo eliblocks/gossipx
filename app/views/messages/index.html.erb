@@ -1,0 +1,24 @@
+<h1>Messages</h1>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Username</th>
+      <th>Content</th>
+      <th>Created</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @messages.each do |message| %>
+      <tr>
+        <td><%= message.user.instagram_username %></td>
+        <td><%= message.content.truncate(500) %></td>
+        <td><%= message.created_at.in_time_zone("America/Los_Angeles").strftime("%b %d %I:%M %p") %></td>
+        <td>
+          <%= link_to "Thread", user_path(message.user_id) %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

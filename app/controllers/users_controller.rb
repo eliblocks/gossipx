@@ -1,6 +1,9 @@
 class UsersController < ApplicationController
   def index
     @users = User.where(role: "user")
+                 .left_joins(:messages)
+                 .group(:id)
+                 .order("MAX(messages.created_at) DESC NULLS LAST")
   end
 
   def show

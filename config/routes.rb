@@ -17,6 +17,8 @@ Rails.application.routes.draw do
     end
   end
 
+  get "/messages", to: "messages#index"
+
   get "/webhooks/instagram", to: "webhooks#verify_instagram"
   post "/webhooks/instagram", to: "webhooks#instagram"
   get "/webhooks/whatsapp", to: "webhooks#verify_whatsapp"

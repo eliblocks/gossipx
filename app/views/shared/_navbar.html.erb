@@ -1,6 +1,15 @@
-<nav class="navbar navbar-light bg-light">
+<nav class="navbar navbar-expand-sm navbar-light bg-light">
   <div class="container-fluid">
     <%= link_to "Blabber", users_path, class: "navbar-brand" %>
+
+    <ul class="navbar-nav me-auto">
+      <li class="nav-item">
+        <%= link_to "Users", users_path, class: "nav-link #{controller_name == "users" ? "active" : ""}" %>
+      </li>
+      <li class="nav-item">
+        <%= link_to "Messages", messages_path, class: "nav-link #{controller_name == "messages" ? "active" : ""}" %>
+      </li>
+    </ul>
 
     <%= button_to "Sign out", destroy_user_session_path, method: :delete, class: "btn btn-warning" %>
   </div>
