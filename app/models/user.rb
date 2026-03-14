@@ -17,7 +17,7 @@ class User < ApplicationRecord
 
   DAILY_MESSAGE_LIMIT = 50
   MONTHLY_MESSAGE_LIMIT = 500
-  MAX_CONVERSATION_LENGTH = 30_000
+  MAX_CONVERSATION_LENGTH = 25_000
 
   def system_prompt
     "You are an Instagram account called Gossip and you are Direct Messaging a user.
