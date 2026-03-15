@@ -31,8 +31,7 @@ class User < ApplicationRecord
   def handle_message(content, now = false)
     messages.create!(role: "user", content:)
 
-    # now ? ReplyJob.new.perform(id) : ReplyJob.perform_async(id)
-    ReplyJob.perform_async(id)
+    now ? ReplyJob.new.perform(id) : ReplyJob.perform_async(id)
   end
 
   def daily_messages
