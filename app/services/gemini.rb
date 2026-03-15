@@ -1,4 +1,6 @@
 class Gemini
+  class NoResponseError; end
+
   URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent"
 
   def initialize(user)
@@ -13,11 +15,16 @@ class Gemini
     loop do
       body[:contents] = gemini_contents(messages)
 
-      Rails.logger.info "\nUser Message: #{messages.last&.content}"
+      Rails.logger.info "User Message: #{messages.last&.content}"
       data = HTTP.post("#{URL}?key=#{ENV.fetch('GEMINI_API_KEY')}", json: body).parse
 
       parts = data.dig("candidates", 0, "content", "parts")
       message = @user.messages.new(role: "assistant", provider: "gemini")
+
+      if parts.nil?
+        Rails.logger.info data
+        raise NoResponseError
+      end
 
       parts.each do |part|
         message.thinking_signature = part["thoughtSignature"] if part["thoughtSignature"]
