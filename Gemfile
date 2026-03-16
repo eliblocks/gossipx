@@ -68,4 +68,6 @@ group :development do
   gem "web-console"
 end
 
-gem "bugsnag", "~> 6.29"
+group :production do
+  gem "bugsnag", "~> 6.29"
+end
