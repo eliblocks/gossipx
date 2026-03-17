@@ -1,5 +1,5 @@
 class Gemini
-  class NoResponseError; end
+  class NoResponseError < StandardError; end
 
   URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent"
 
