@@ -1,5 +1,4 @@
 class User < ApplicationRecord
-  # :confirmable, :lockable, :timeoutable, :trackable, :omniauthable, :registerable,
   devise :database_authenticatable, :recoverable, :rememberable, :validatable
 
   has_many :messages, dependent: :destroy
@@ -29,6 +28,12 @@ class User < ApplicationRecord
   end
 
   def handle_message(content, now = false)
+    if rate_limited?
+      send_message(Message.new(content: "Thanks for chatting with me, but I've got to take a break! Try again tomorrow!"))
+
+      return
+    end
+
     messages.create!(role: "user", content:)
 
     now ? ReplyJob.new.perform(id) : ReplyJob.perform_async(id)
@@ -49,33 +54,6 @@ class User < ApplicationRecord
   def route
     prompt = ROUTING_PROMPT.sub("{{current_user_conversation}}", formatted_messages)
     Ai.chat(prompt)
-  end
-
-  def share
-    prompt = RESPONSE_PROMPT.sub("{{current_user_conversation}}", formatted_messages).sub("{{similar_conversations}}", formatted_similar)
-    Rails.logger.info(prompt)
-    Ai.chat(prompt)
-  end
-
-  def collect
-    prompt = COLLECTION_PROMPT.sub("{{current_user_conversation}}", formatted_messages)
-    Rails.logger.info(prompt)
-    Ai.chat(prompt)
-  end
-
-  def chat_response
-    if rate_limited?
-      return "I can't chat all day! Let's talk more later"
-    end
-
-    if route == "share"
-      Rails.logger.info("SHARE")
-      embed
-      share
-    else
-      Rails.logger.info("COLLECT")
-      collect
-    end
   end
 
   def reflect_tool
@@ -104,13 +82,8 @@ class User < ApplicationRecord
     content
   end
 
-  def agent_reply
-    message = Gemini.new(self).chat(messages.order(:created_at).to_a, tools: [ reflect_tool ], system_prompt:)
-    send_message(message)
-  end
-
   def reply
-    message = messages.create(role: "assistant", content: chat_response)
+    message = Gemini.new(self).chat(messages.order(:created_at).to_a, tools: [ reflect_tool ], system_prompt:)
     send_message(message)
   end
 
