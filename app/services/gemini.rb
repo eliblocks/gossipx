@@ -13,6 +13,7 @@ class Gemini
     body[:tools] = [ { functionDeclarations: kwargs[:tools].map { |t| { name: t[:name], description: t[:description], parameters: t[:input_schema] } } } ] if kwargs[:tools]
 
     loop do
+      Discord.start_typing(@user.channel_id) if @user.discord_id.present?
       body[:contents] = gemini_contents(messages)
 
       Rails.logger.info "User Message: #{messages.last&.content}"

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_08_175517) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_25_215016) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -109,6 +109,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_08_175517) do
   create_table "messages", force: :cascade do |t|
     t.text "content"
     t.datetime "created_at", null: false
+    t.string "guild_id"
     t.string "provider"
     t.string "role"
     t.text "thinking"
@@ -118,11 +119,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_08_175517) do
     t.string "tool_name"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.index ["guild_id"], name: "index_messages_on_guild_id"
     t.index ["user_id"], name: "index_messages_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
+    t.string "active_guild_id"
+    t.string "channel_id"
     t.datetime "created_at", null: false
+    t.string "discord_id"
+    t.string "discord_username"
     t.string "email", default: "", null: false
     t.vector "embedding"
     t.string "encrypted_password", default: "", null: false
@@ -139,6 +145,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_08_175517) do
     t.string "role", default: "user", null: false
     t.text "summary"
     t.datetime "updated_at", null: false
+    t.index ["active_guild_id"], name: "index_users_on_active_guild_id"
+    t.index ["discord_id"], name: "index_users_on_discord_id", unique: true
+    t.index ["discord_username"], name: "index_users_on_discord_username", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["facebook_id"], name: "index_users_on_facebook_id", unique: true
     t.index ["facebook_username"], name: "index_users_on_facebook_username", unique: true

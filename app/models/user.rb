@@ -27,6 +27,10 @@ class User < ApplicationRecord
     Its kind of a give to get system."
   end
 
+  def username
+    instagram_username || discord_username
+  end
+
   def handle_message(content, now = false)
     if rate_limited?
       send_message(Message.new(content: "Thanks for chatting with me, but I've got to take a break! Try again tomorrow!"))
@@ -53,6 +57,7 @@ class User < ApplicationRecord
 
   def route
     prompt = ROUTING_PROMPT.sub("{{current_user_conversation}}", formatted_messages)
+    Discord.start_typing(channel_id) if discord_id.present?
     Ai.chat(prompt)
   end
 
@@ -76,6 +81,7 @@ class User < ApplicationRecord
 
       prompt = AGENT_RESPONSE_PROMPT.sub("{{current_user_conversation}}", formatted_messages).sub("{{similar_conversations}}", formatted_similar)
       Rails.logger.info(prompt)
+      Discord.start_typing(channel_id) if discord_id.present?
       content = Ai.chat(prompt)
     end
 
@@ -106,8 +112,10 @@ class User < ApplicationRecord
   end
 
   def send_message(message)
-    return unless Rails.env.production?
-
-    Instagram.send_message(instagram_id, message.content)
+    if discord_id.present?
+      Discord.send_message(channel_id, message.content)
+    elsif instagram_id.present? && Rails.env.production?
+      Instagram.send_message(instagram_id, message.content)
+    end
   end
 end

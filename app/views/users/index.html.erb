@@ -22,7 +22,7 @@
   <tbody>
     <% @users.each do |user| %>
       <tr>
-        <td><%= user.instagram_username %></td>
+        <td><%= user.username %></td>
         <td><%= user.role %></td>
         <td><%= user.messages.count %></td>
         <td><%= user.summary&.truncate(100) %></td>
