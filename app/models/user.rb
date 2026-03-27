@@ -104,7 +104,11 @@ class User < ApplicationRecord
   end
 
   def similar
-    User.where.not(id: id).where.not(instagram_username: nil).nearest_neighbors(:embedding, embedding, distance: "euclidean").first(20)
+    if discord_id
+      User.where.not(id: id).where(active_guild_id: active_guild_id).nearest_neighbors(:embedding, embedding, distance: "euclidean").first(20)
+    elsif instagram_id
+      User.where.not(id: id).where.not(instagram_username: nil).nearest_neighbors(:embedding, embedding, distance: "euclidean").first(20)
+    end
   end
 
   def formatted_similar
@@ -113,9 +117,16 @@ class User < ApplicationRecord
 
   def send_message(message)
     if discord_id.present?
-      Discord.send_message(channel_id, message.content)
+      Discord.send_message(channel_id, linkify_discord_usernames(message.content))
     elsif instagram_id.present? && Rails.env.production?
       Instagram.send_message(instagram_id, message.content)
+    end
+  end
+
+  def linkify_discord_usernames(text)
+    text.gsub(/@([\w.]+)/) do |match|
+      mentioned = User.find_by(discord_username: $1)
+      mentioned&.discord_id ? "[#{match}](https://discord.com/users/#{mentioned.discord_id})" : match
     end
   end
 end

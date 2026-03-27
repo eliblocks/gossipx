@@ -14,8 +14,8 @@ class Message < ApplicationRecord
 
     if role == "assistant"
       label = "bot"
-    elsif user.instagram_username
-      label = "@#{user.instagram_username}"
+    elsif user.username
+      label = "@#{user.username}"
     elsif user.phone
       label = "<#{user.phone}> #{user.full_name}"
     end

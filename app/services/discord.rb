@@ -14,7 +14,8 @@ class Discord
 
     def send_message(channel_id, text)
       http.post("#{BASE_URL}/channels/#{channel_id}/messages", json: {
-        content: text
+        content: text,
+        flags: 1 << 2
       })
     end
   end
