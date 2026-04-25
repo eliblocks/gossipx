@@ -104,9 +104,9 @@ class User < ApplicationRecord
   end
 
   def similar
-    if discord_id
-      User.where.not(id: id).where(active_guild_id: active_guild_id).nearest_neighbors(:embedding, embedding, distance: "euclidean").first(20)
-    elsif instagram_id
+    if discord_username
+      User.where.not(id: id).where.not(discord_username: nil).where(active_guild_id: active_guild_id).nearest_neighbors(:embedding, embedding, distance: "euclidean").first(20)
+    elsif instagram_username
       User.where.not(id: id).where.not(instagram_username: nil).nearest_neighbors(:embedding, embedding, distance: "euclidean").first(20)
     end
   end
