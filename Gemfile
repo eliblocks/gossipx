@@ -44,7 +44,6 @@ gem "http"
 gem "good_job"
 gem "anthropic", "~> 1.1"
 gem "faker"
-gem "sidekiq"
 
 gem "discordrb"
 
