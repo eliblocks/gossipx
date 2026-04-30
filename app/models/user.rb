@@ -9,6 +9,7 @@ class User < ApplicationRecord
   validates :phone, uniqueness: true, allow_nil: true
 
   include Prompts
+  include Tools
 
   def full_name
     "#{first_name} #{last_name}"
@@ -17,15 +18,6 @@ class User < ApplicationRecord
   DAILY_MESSAGE_LIMIT = 50
   MONTHLY_MESSAGE_LIMIT = 500
   MAX_CONVERSATION_LENGTH = 25_000
-
-  def system_prompt
-    "You are an Instagram account and you are Direct Messaging a user.
-    Unlike a regular chatbot, you mention your previous conversations with other people, just like a real person would.
-    So if someone tells you something interesting you can call reflect to bring up something relevant that someone else said.
-    Try to create fun and interesting @mentions by getting the user to tell you stuff! But be concise, you are chattting on mobile.
-    When you reflect, another model will evaluate the current conversation and may direct you to collect more information from the user.
-    Its kind of a give to get system."
-  end
 
   def username
     instagram_username || discord_username
@@ -40,7 +32,7 @@ class User < ApplicationRecord
 
     messages.create!(role: "user", content:)
 
-    now ? ReplyJob.new.perform(id) : ReplyJob.perform_async(id)
+    now ? ReplyJob.perform_now(id) : ReplyJob.perform_later(id)
   end
 
   def daily_messages
@@ -61,15 +53,12 @@ class User < ApplicationRecord
     Ai.chat(prompt)
   end
 
-  def reflect_tool
-    {
-      name: "reflect",
-      description: "Recall something relevant from one of your previous conversations with other people.",
-      input_schema: {
-        type: "object",
-        properties: {}
-      }
-    }
+  def search_similar_conversations
+    similar.as_json(only: [ :instagram_username, :summary ])
+  end
+
+  def open_conversation(instagram_username)
+    formatted_messages
   end
 
   def reflect
@@ -89,8 +78,17 @@ class User < ApplicationRecord
   end
 
   def reply
-    message = Gemini.new(self).chat(messages.order(:created_at).to_a, tools: [ reflect_tool ], system_prompt:)
+    message = Gemini.new(self).chat(messages.order(:created_at).to_a, tools: [ REFLECT ], system_prompt: SYSTEM_PROMPT)
     send_message(message)
+
+    SummarizeJob.perform_later(id)
+  end
+
+  def search_reply
+    message = Gemini.new(self).chat(messages.order(:created_at).to_a, tools: [ SEARCH_SIMILAR_CONVERSATIONS, OPEN_CONVERSATION ], system_prompt: SEARCH_SYSTEM_PROMPT)
+    send_message(message)
+
+    SummarizeJob.perform_later(id)
   end
 
   def formatted_messages
@@ -128,5 +126,10 @@ class User < ApplicationRecord
       mentioned = User.find_by(discord_username: $1)
       mentioned&.discord_id ? "[#{match}](https://discord.com/users/#{mentioned.discord_id})" : match
     end
+  end
+
+  def summarize
+    prompt = SUMMARIZE_PROMPT.sub("{{current_user_conversation}}", formatted_messages)
+    update(summary: Ai.chat(prompt))
   end
 end

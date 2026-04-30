@@ -51,7 +51,7 @@ class Gemini
         role: "user",
         tool_name: message.tool_name,
         tool_call_id: message.tool_call_id,
-        content: @user.reflect
+        content: call_tool(message.tool_name, message.tool_arguments)
       )
     end
 
@@ -59,6 +59,19 @@ class Gemini
   end
 
   private
+
+  def call_tool(name, arguments)
+    case name
+    when "reflect"
+      @user.reflect
+    when "search_similar_conversations"
+      @user.search_similar_conversations.to_json
+    when "open_conversation"
+      @user.open_conversation(arguments&.dig("instagram_username"))
+    else
+      "Unknown tool: #{name}"
+    end
+  end
 
   def gemini_contents(messages)
     messages.map do |message|
