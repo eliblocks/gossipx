@@ -20,7 +20,7 @@ class User < ApplicationRecord
   MAX_CONVERSATION_LENGTH = 25_000
 
   def username
-    instagram_username || discord_username
+    instagram_username
   end
 
   def handle_message(content, now = false)
@@ -49,7 +49,6 @@ class User < ApplicationRecord
 
   def route
     prompt = ROUTING_PROMPT.sub("{{current_user_conversation}}", formatted_messages)
-    Discord.start_typing(channel_id) if discord_id.present?
     Ai.chat(prompt)
   end
 
@@ -70,7 +69,6 @@ class User < ApplicationRecord
 
       prompt = AGENT_RESPONSE_PROMPT.sub("{{current_user_conversation}}", formatted_messages).sub("{{similar_conversations}}", formatted_similar)
       Rails.logger.info(prompt)
-      Discord.start_typing(channel_id) if discord_id.present?
       content = Ai.chat(prompt)
     end
 
@@ -102,9 +100,7 @@ class User < ApplicationRecord
   end
 
   def similar
-    if discord_username
-      User.where.not(id: id).where.not(discord_username: nil).where(active_guild_id: active_guild_id).nearest_neighbors(:embedding, embedding, distance: "euclidean").first(20)
-    elsif instagram_username
+    if instagram_username
       User.where.not(id: id).where.not(instagram_username: nil).nearest_neighbors(:embedding, embedding, distance: "euclidean").first(20)
     end
   end
@@ -114,17 +110,8 @@ class User < ApplicationRecord
   end
 
   def send_message(message)
-    if discord_id.present?
-      Discord.send_message(channel_id, linkify_discord_usernames(message.content))
-    elsif instagram_id.present? && Rails.env.production?
+    if instagram_id.present? && Rails.env.production?
       Instagram.send_message(instagram_id, message.content)
-    end
-  end
-
-  def linkify_discord_usernames(text)
-    text.gsub(/@([\w.]+)/) do |match|
-      mentioned = User.find_by(discord_username: $1)
-      mentioned&.discord_id ? "[#{match}](https://discord.com/users/#{mentioned.discord_id})" : match
     end
   end
 

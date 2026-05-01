@@ -24,8 +24,6 @@ Rails.application.routes.draw do
   get "/webhooks/twitter", to: "webhooks#verify_twitter"
   post "/webhooks/twitter", to: "webhooks#twitter"
 
-  post "discord/interactions", to: "discord#interactions"
-
   authenticate :user, ->(user) { user.role == "admin" } do
     mount GoodJob::Engine => "good_job"
   end

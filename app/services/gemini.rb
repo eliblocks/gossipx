@@ -15,7 +15,6 @@ class Gemini
     tool_results = []
 
     loop do
-      Discord.start_typing(@user.channel_id) if @user.discord_id.present?
       body[:contents] = gemini_contents(messages)
 
       Rails.logger.info "User Message: #{messages.last&.content}"
