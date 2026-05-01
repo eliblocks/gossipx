@@ -12,6 +12,8 @@ class Gemini
     body[:systemInstruction] = { parts: [ { text: kwargs[:system_prompt] } ] } if kwargs[:system_prompt]
     body[:tools] = [ { functionDeclarations: kwargs[:tools].map { |t| { name: t[:name], description: t[:description], parameters: t[:input_schema] } } } ] if kwargs[:tools]
 
+    tool_results = []
+
     loop do
       Discord.start_typing(@user.channel_id) if @user.discord_id.present?
       body[:contents] = gemini_contents(messages)
@@ -47,13 +49,13 @@ class Gemini
 
       break unless message.tool_call_id
 
-      messages << @user.messages.create!(
-        role: "user",
-        tool_name: message.tool_name,
-        tool_call_id: message.tool_call_id,
-        content: call_tool(message.tool_name, message.tool_arguments)
-      )
+      result = call_tool(message.tool_name, message.tool_arguments)
+      tool_msg = @user.messages.create!(role: "user", tool_name: message.tool_name, tool_call_id: message.tool_call_id, content: result)
+      tool_results << { message: tool_msg, truncated: truncated_tool_result(message.tool_name, message.tool_arguments, result) }
+      messages << tool_msg
     end
+
+    tool_results.each { |t| t[:message].update!(content: t[:truncated]) }
 
     messages.last
   end
@@ -70,6 +72,17 @@ class Gemini
       @user.open_conversation(arguments&.dig("instagram_username"))
     else
       "Unknown tool: #{name}"
+    end
+  end
+
+  def truncated_tool_result(name, arguments, result)
+    case name
+    when "search_similar_conversations"
+      "Searched #{(JSON.parse(result).length rescue 0)} conversations"
+    when "open_conversation"
+      "Opened @#{arguments&.dig('instagram_username')}'s conversation"
+    else
+      result
     end
   end
 
