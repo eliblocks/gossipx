@@ -53,6 +53,7 @@ class User < ApplicationRecord
   end
 
   def search_similar_conversations
+    embed
     similar.as_json(only: [ :instagram_username, :summary ])
   end
 
