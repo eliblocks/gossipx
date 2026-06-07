@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_25_215016) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_04_221200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -144,6 +144,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_25_215016) do
     t.string "reset_password_token"
     t.string "role", default: "user", null: false
     t.text "summary"
+    t.string "twitter_id"
+    t.string "twitter_username"
     t.datetime "updated_at", null: false
     t.index ["active_guild_id"], name: "index_users_on_active_guild_id"
     t.index ["discord_id"], name: "index_users_on_discord_id", unique: true
@@ -155,6 +157,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_25_215016) do
     t.index ["instagram_username"], name: "index_users_on_instagram_username", unique: true
     t.index ["phone"], name: "index_users_on_phone", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+    t.index ["twitter_id"], name: "index_users_on_twitter_id", unique: true
+    t.index ["twitter_username"], name: "index_users_on_twitter_username", unique: true
   end
 
   add_foreign_key "messages", "users"

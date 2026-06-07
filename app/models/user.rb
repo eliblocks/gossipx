@@ -7,6 +7,8 @@ class User < ApplicationRecord
   validates :instagram_id, uniqueness: true, allow_nil: true
   validates :instagram_username, uniqueness: true, allow_nil: true
   validates :phone, uniqueness: true, allow_nil: true
+  validates :twitter_id, uniqueness: true, allow_nil: true
+  validates :twitter_username, uniqueness: true, allow_nil: true
 
   include Prompts
   include Tools
@@ -20,7 +22,7 @@ class User < ApplicationRecord
   MAX_CONVERSATION_LENGTH = 25_000
 
   def username
-    instagram_username
+    instagram_username || twitter_username
   end
 
   def handle_message(content, now = false)
@@ -79,15 +81,11 @@ class User < ApplicationRecord
   def reply
     message = Gemini.new(self).chat(messages.order(:created_at).to_a, tools: [ REFLECT ], system_prompt: SYSTEM_PROMPT)
     send_message(message)
-
-    SummarizeJob.perform_later(id)
   end
 
   def search_reply
     message = Gemini.new(self).chat(messages.order(:created_at).to_a, tools: [ SEARCH_SIMILAR_CONVERSATIONS, OPEN_CONVERSATION ], system_prompt: SEARCH_SYSTEM_PROMPT)
     send_message(message)
-
-    SummarizeJob.perform_later(id)
   end
 
   def formatted_messages
@@ -101,8 +99,8 @@ class User < ApplicationRecord
   end
 
   def similar
-    if instagram_username
-      User.where.not(id: id).where.not(instagram_username: nil).nearest_neighbors(:embedding, embedding, distance: "euclidean").first(20)
+    if username
+      User.where.not(id: id).nearest_neighbors(:embedding, embedding, distance: "euclidean").first(20)
     end
   end
 
@@ -113,6 +111,8 @@ class User < ApplicationRecord
   def send_message(message)
     if instagram_id.present? && Rails.env.production?
       Instagram.send_message(instagram_id, message.content)
+    elsif twitter_id.present?
+      Twitter.send_message(twitter_id, message.content)
     end
   end
 
