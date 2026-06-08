@@ -23,9 +23,9 @@ module Tools
     input_schema: {
       type: "object",
       properties: {
-        instagram_username: { type: "string", description: "The username of the person whose conversation to open" }
+        twitter_username: { type: "string", description: "The username of the person whose conversation to open" }
       },
-      required: [ "instagram_username" ]
+      required: [ "twitter_username" ]
     }
   }.freeze
 end

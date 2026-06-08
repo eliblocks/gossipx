@@ -75,7 +75,7 @@ RSpec.describe "Matching", type: :model do
     # Create all 20 users from fixture
     CONVERSATIONS.keys.each do |username|
       let!(username.to_sym) do
-        user = create(:user, instagram_username: username)
+        user = create(:user, twitter_username: username)
         create_conversation(user, CONVERSATIONS[username])
         user
       end

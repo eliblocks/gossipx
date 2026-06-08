@@ -15,12 +15,6 @@ Rails.application.routes.draw do
 
   get "/messages", to: "messages#index"
 
-  get "/webhooks/instagram", to: "webhooks#verify_instagram"
-  post "/webhooks/instagram", to: "webhooks#instagram"
-  get "/webhooks/whatsapp", to: "webhooks#verify_whatsapp"
-  post "/webhooks/whatsapp", to: "webhooks#whatsapp"
-  get "/webhooks/messenger", to: "webhooks#verify_messenger"
-  post "/webhooks/messenger", to: "webhooks#messenger"
   get "/webhooks/twitter", to: "webhooks#verify_twitter"
   post "/webhooks/twitter", to: "webhooks#twitter"
 

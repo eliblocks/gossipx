@@ -4,9 +4,6 @@ class User < ApplicationRecord
   has_many :messages, dependent: :destroy
   has_neighbors :embedding
 
-  validates :instagram_id, uniqueness: true, allow_nil: true
-  validates :instagram_username, uniqueness: true, allow_nil: true
-  validates :phone, uniqueness: true, allow_nil: true
   validates :twitter_id, uniqueness: true, allow_nil: true
   validates :twitter_username, uniqueness: true, allow_nil: true
 
@@ -22,7 +19,7 @@ class User < ApplicationRecord
   MAX_CONVERSATION_LENGTH = 25_000
 
   def username
-    instagram_username || twitter_username
+    twitter_username
   end
 
   def handle_message(content, now = false)
@@ -56,10 +53,10 @@ class User < ApplicationRecord
 
   def search_similar_conversations
     embed
-    similar.as_json(only: [ :instagram_username, :summary ])
+    similar.as_json(only: [ :twitter_username, :summary ])
   end
 
-  def open_conversation(instagram_username)
+  def open_conversation(twitter_username)
     formatted_messages
   end
 
@@ -109,9 +106,7 @@ class User < ApplicationRecord
   end
 
   def send_message(message)
-    if instagram_id.present? && Rails.env.production?
-      Instagram.send_message(instagram_id, message.content)
-    elsif twitter_id.present?
+    if twitter_id.present?
       Twitter.send_message(twitter_id, message.content)
     end
   end

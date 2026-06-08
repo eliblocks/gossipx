@@ -68,7 +68,7 @@ class Gemini
     when "search_similar_conversations"
       @user.search_similar_conversations.to_json
     when "open_conversation"
-      @user.open_conversation(arguments&.dig("instagram_username"))
+      @user.open_conversation(arguments&.dig("twitter_username"))
     else
       "Unknown tool: #{name}"
     end
@@ -79,7 +79,7 @@ class Gemini
     when "search_similar_conversations"
       "Searched #{(JSON.parse(result).length rescue 0)} conversations"
     when "open_conversation"
-      "Opened @#{arguments&.dig('instagram_username')}'s conversation"
+      "Opened @#{arguments&.dig('twitter_username')}'s conversation"
     else
       result
     end

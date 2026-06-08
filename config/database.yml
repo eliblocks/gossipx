@@ -22,13 +22,13 @@ default: &default
 
 development:
   <<: *default
-  database: blabber_development
+  database: gossipx_development
 
   # The specified database role being used to connect to PostgreSQL.
   # To create additional roles in PostgreSQL see `$ createuser --help`.
   # When left blank, PostgreSQL will use the default role. This is
   # the same name as the operating system user running Rails.
-  #username: blabber
+  #username: gossipx
 
   # The password associated with the PostgreSQL role (username).
   #password:
@@ -56,7 +56,7 @@ development:
 # Do not set this db to the same as development or production.
 test:
   <<: *default
-  database: blabber_test
+  database: gossipx_test
 
 # As with config/credentials.yml, you never want to store sensitive information,
 # like your database password, in your source code. If your source code is
@@ -80,6 +80,6 @@ test:
 #
 production:
   <<: *default
-  database: blabber_production
-  username: blabber
-  password: <%= ENV["BLABBER_DATABASE_PASSWORD"] %>
+  database: gossipx_production
+  username: gossipx
+  password: <%= ENV["GOSSIPX_DATABASE_PASSWORD"] %>

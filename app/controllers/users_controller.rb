@@ -28,7 +28,7 @@ class UsersController < ApplicationController
 
   def generate
     username = Faker::Internet.username
-    User.create!(email: "#{username}@example.com", instagram_username: username, password: SecureRandom.hex)
+    User.create!(email: "#{username}@example.com", twitter_username: username, password: SecureRandom.hex)
 
     redirect_to users_path
   end
@@ -37,9 +37,8 @@ class UsersController < ApplicationController
     @user = User.find(params[:id])
     @user.assign_attributes(user_params)
 
-    @user.instagram_id = @user.instagram_id.presence
-    @user.instagram_username = @user.instagram_username.presence
-    @user.phone = @user.phone.presence
+    @user.twitter_id = @user.twitter_id.presence
+    @user.twitter_username = @user.twitter_username.presence
 
     @user.save!
 
@@ -64,6 +63,6 @@ class UsersController < ApplicationController
   private
 
   def user_params
-    params.require(:user).permit(:email, :phone, :first_name, :last_name, :instagram_id, :instagram_username, :role)
+    params.require(:user).permit(:email, :first_name, :last_name, :twitter_id, :twitter_username, :role)
   end
 end

@@ -12,7 +12,7 @@
   <tbody>
     <% @messages.each do |message| %>
       <tr>
-        <td><%= message.user.instagram_username %></td>
+        <td><%= message.user.twitter_username %></td>
         <td><%= message.content.truncate(500) %></td>
         <td><%= message.created_at.in_time_zone("America/Los_Angeles").strftime("%b %d %I:%M %p") %></td>
         <td>
