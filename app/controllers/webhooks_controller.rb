@@ -10,9 +10,10 @@ class WebhooksController < ActionController::API
   end
 
   def twitter
-    bot_id = params[:for_user_id]
-    events = params[:direct_message_events]
-    users = params[:users]
+    payload = params.dig(:data, :payload) || params
+    bot_id = params.dig(:data, :filter, :user_id) || params[:for_user_id]
+    events = payload[:direct_message_events]
+    users = payload[:users]
 
     return head :ok unless events
 
@@ -25,16 +26,16 @@ class WebhooksController < ActionController::API
       next unless text
       next if sender_id == bot_id
 
-      sender = users&.dig(sender_id)
+      profile = users&.dig(sender_id, "data") || users&.dig(sender_id)
 
       user = User.find_or_initialize_by(twitter_id: sender_id) do |u|
         u.email = "#{sender_id}@example.com"
         u.password = SecureRandom.hex
       end
 
-      if sender
-        user.twitter_username = sender["screen_name"]
-        names = sender["name"]&.split(" ")
+      if profile
+        user.twitter_username = profile["username"] || profile["screen_name"]
+        names = profile["name"]&.split(" ")
         if names
           user.last_name = names.pop
           user.first_name = names.join(" ")
