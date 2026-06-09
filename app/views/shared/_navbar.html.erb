@@ -1,16 +1,19 @@
 <nav class="navbar navbar-expand-sm navbar-light bg-light">
   <div class="container-fluid">
-    <%= link_to "Gossipx", users_path, class: "navbar-brand" %>
+    <%= link_to "Gossipx", root_path, class: "navbar-brand" %>
 
-    <ul class="navbar-nav me-auto">
-      <li class="nav-item">
-        <%= link_to "Users", users_path, class: "nav-link #{controller_name == "users" ? "active" : ""}" %>
-      </li>
-      <li class="nav-item">
-        <%= link_to "Messages", messages_path, class: "nav-link #{controller_name == "messages" ? "active" : ""}" %>
-      </li>
-    </ul>
+    <% if current_user&.admin? %>
 
-    <%= button_to "Sign out", destroy_user_session_path, method: :delete, class: "btn btn-warning" %>
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <%= link_to "Users", users_path, class: "nav-link #{controller_name == "users" ? "active" : ""}" %>
+        </li>
+        <li class="nav-item">
+          <%= link_to "Messages", messages_path, class: "nav-link #{controller_name == "messages" ? "active" : ""}" %>
+        </li>
+      </ul>
+
+      <%= button_to "Sign out", destroy_user_session_path, method: :delete, class: "btn btn-warning" %>
+    <% end %>
   </div>
 </nav>

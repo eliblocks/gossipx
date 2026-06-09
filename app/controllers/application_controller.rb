@@ -12,4 +12,8 @@ class ApplicationController < ActionController::Base
       redirect_to new_user_session_path
     end
   end
+
+  def authorize_admin!
+    redirect_to root_path unless current_user&.admin?
+  end
 end

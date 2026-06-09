@@ -1,4 +1,5 @@
 class MessagesController < ApplicationController
+  before_action :authorize_admin!
   def index
     @messages = Message.where(role: "user", tool_name: nil).includes(:user).order(created_at: :desc).limit(200)
   end

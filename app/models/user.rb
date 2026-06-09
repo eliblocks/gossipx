@@ -18,6 +18,10 @@ class User < ApplicationRecord
   MONTHLY_MESSAGE_LIMIT = 500
   MAX_CONVERSATION_LENGTH = 25_000
 
+  def admin?
+    role == "admin"
+  end
+
   def username
     twitter_username
   end
