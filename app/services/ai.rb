@@ -18,7 +18,7 @@ class Ai
       parameters = {
         model: "gpt-5.2",
         store: true,
-        metadata: { environment: Rails.env, app: "Blabber" },
+        metadata: { environment: Rails.env, app: "Gossipx" },
         reasoning: { effort: :medium },
         input: messages
       }
