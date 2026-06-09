@@ -41,7 +41,6 @@ gem "devise"
 gem "neighbor"
 gem "openai", "~> 0.36.1"
 gem "http"
-gem "good_job"
 gem "anthropic", "~> 1.1"
 gem "faker"
 
